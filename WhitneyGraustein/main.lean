@@ -4,13 +4,15 @@ import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Topology.Basic
 import Mathlib.Logic.Relation
 import Mathlib.Analysis.NormedSpace.Basic
-
+import Mathlib
+open Function
 
 def I : Set ℝ := Set.Icc 0 1
 
 
 structure ParametrizedRegularClosedCurve :=
-(curve : ℝ → ℝ × ℝ)
+(γ : ℝ → ℂ)
+(ContDiff ℝ ⊤ γ)
 (continuous : ContinuousOn curve I)
 (differentiable : DifferentiableOn ℝ curve I)
 (closed : curve 0 = curve 1 ∧ (deriv curve) 0 = (deriv curve) 1)
@@ -91,16 +93,16 @@ sorry
 structure RegularHomotopy (f0 f1 : ParametrizedRegularClosedCurve) :=
 (F : ℝ × ℝ → ℝ × ℝ)
 (continuous : Continuous F)
-(at_zero : ∀ t, F t 0 = f0.curve t)
-(at_one : ∀ t, F t 1 = f1.curve t)
-(regular : ∀ u, ∃ fu : RegularClosedCurve, ∀ t, fu.curve t = F t u)
+(at_zero : ∀ t, F (t, 0) = f0.curve t)
+(at_one : ∀ t, F (t, 1) = f1.curve t)
+(regular : ∀ u, ∃ fu : ParametrizedRegularClosedCurve, ∀ t, fu.curve t = F (t, u))
 
 def is_regularly_homotopic (f g : ParametrizedRegularClosedCurve) : Prop :=
-∃ h : RegularHomotopy f g
+∃ h : RegularHomotopy f g, true
 
 
 theorem regularly_homotopic_in_rc_curve
   {C : RegularClosedCurve} {f₀ f₁ : ParametrizedRegularClosedCurve}
-  (hf₀ : f₀ ∈ C) (hf₁ : f₁ = C) :
-  ∃ (F : RegularHomotopy f₀ f₁), ∀ u, quotient.mk' (F.regular u).some = C :=
+  (hf₀ : f₀ ∈ C) (hf₁ : f₁ ∈ C) :
+  ∃ (F : RegularHomotopy f₀ f₁), ∀ u, Quotient.mk' (F.regular u).some = C :=
 sorry
