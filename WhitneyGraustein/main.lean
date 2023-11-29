@@ -82,4 +82,25 @@ sorry
 
 
 
-/-TODO: Define Regular Homotopy and Turning Number-/
+
+
+
+
+
+
+structure RegularHomotopy (f0 f1 : ParametrizedRegularClosedCurve) :=
+(F : ℝ × ℝ → ℝ × ℝ)
+(continuous : Continuous F)
+(at_zero : ∀ t, F t 0 = f0.curve t)
+(at_one : ∀ t, F t 1 = f1.curve t)
+(regular : ∀ u, ∃ fu : RegularClosedCurve, ∀ t, fu.curve t = F t u)
+
+def is_regularly_homotopic (f g : ParametrizedRegularClosedCurve) : Prop :=
+∃ h : RegularHomotopy f g
+
+
+theorem regularly_homotopic_in_rc_curve
+  {C : RegularClosedCurve} {f₀ f₁ : ParametrizedRegularClosedCurve}
+  (hf₀ : f₀ ∈ C) (hf₁ : f₁ = C) :
+  ∃ (F : RegularHomotopy f₀ f₁), ∀ u, quotient.mk' (F.regular u).some = C :=
+sorry
