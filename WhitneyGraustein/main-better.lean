@@ -39,7 +39,17 @@ structure HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ (uncurry γ)
   imm : ∀ s, CircleImmersion (γ s)
 
-lemma root_lemma_maybe : ∀ (c₁ : ℝ) (c₂ : ℝ) (c₃ : ℝ), ∃ (N : ℤ), ∃ (H : ℝ), c₁ * N * H - c₂ * H - c₃ > 0 := sorry --the constants are positive, may help to put H before N
+lemma root_lemma_maybe {K₁ K₂ K₃: ℝ} (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
+  let K₁H_pos := Real.mul_pos K₁_pos H_pos
+  use Nat.floor ((K₃ + K₂ * H) / (K₁ * H) + 1)
+  intro N hN
+  have fact'₂ : K₁ * H * ((K₃ + K₂ * H) / (K₁ * H)) = (K₃ + K₂ * H) := mul_div_cancel' (K₃ + K₂ * H) (ne_of_gt K₁H_pos)
+  have fact₃ : K₁ * H * ((K₃ + K₂ * H) / (K₁ * H)) + (K₁ * H) = (K₃ + K₂ * H) + (K₁ * H) := congrFun (congrArg HAdd.hAdd fact'₂) (K₁ * H)
+  have fact₄₇ : (K₁ * H) * ((K₃ + K₂ * H) / (K₁ * H) + 1) = (K₃ + K₂ * H) + (K₁ * H) := (Eq.congr (mul_add_one (K₁ * H) ((K₃ + K₂ * H) / (K₁ * H))) rfl).mpr fact₃
+  have facttt : (K₃ + K₂ * H) + (K₁ * H) < (K₁ * H) * ↑N := Eq.trans_lt (id fact₄₇.symm) ((mul_lt_mul_left K₁H_pos).mpr ((Nat.floor_lt' (Nat.not_eq_zero_of_lt hN)).1 hN))
+  have factttt : K₃ + K₂ * H < K₁ * H * ↑N := gt_trans (sub_lt_self (K₁ * H * ↑N) K₁H_pos) (lt_tsub_iff_right.mpr facttt)
+  exact sub_pos.mpr ((Eq.trans_lt (id (add_comm K₃ (K₂ * H)).symm)) factttt)
+  -- proof, indeed.
 
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ (γ 0 = γ₀ ∧ γ 1 = γ₁) := by
@@ -87,7 +97,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   let (R : ℝ → ℂ) := fun θ ↦ exp (I * (θ : ℝ))
   let ruffling : ℝ → ℂ := fun t ↦ -Real.sin (4 * π * t) + I * 2 * Real.sin (2 * π * t)
-  let (Γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffling (N * t)
+  let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffling (N * t)
   use γ
   constructor
   · sorry --HtpyCircleImmersion (γ : ℝ → ℝ → ℂ)
@@ -104,15 +114,11 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   · constructor
     · sorry --γ 0 = γ₀
     · sorry --γ 1 = γ₁
-  have diff : ContDiff ℝ ⊤ (uncurry γ) := sorry
-  have imm : ∀ s, CircleImmersion (γ s)
-  have key₁ : HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) := sorry
 
   --
   --let R : ℝ → ℂ := fun θ ↦ exp (I * θ)
   --let γ := fun s t ρ h N ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t + (h s) R(1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t) * ripple (N * t)
   -- γ s t = (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t + (h s) R(1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t) * ripple (N * t)
-  sorry
 
 -- γ s := (1 - ρ s) * γ₀ + (ρ s) * γ₁ + (h s) * (R s?) * e (N * )
 -- exp (I * h.lift t) is a local homeomorphism
