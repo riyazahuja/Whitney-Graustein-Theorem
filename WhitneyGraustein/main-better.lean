@@ -40,16 +40,13 @@ structure HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) : Prop where
   imm : ∀ s, CircleImmersion (γ s)
 
 
-
-
-
-
 /-
 ∀K₁, K₂, K₃ : ℝ, with K₁ > 0, and ∀H > 0, we claim that  there exists some N₀ such that N ≥ N₀
 implies that K₁HN - K₂H - K₃ > 0
 
 This is required to construct our gamma function and for the main phase.
 -/
+
 lemma root_lemma_maybe {K₁ K₂ K₃: ℝ} (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
   /- Claim that N₀ = max (⌊(K₃ + K₂ * H) / (K₁ * H) + 1⌋) (0)
@@ -72,10 +69,6 @@ lemma root_lemma_maybe {K₁ K₂ K₃: ℝ} (K₁_pos : K₁ > 0) (H_pos : H > 
   have final: (K₃ + K₂ * H) / (K₁ * H) < N := by linarith
   have final2: (K₃ + K₂ * H) < (K₁ * H) * N  := by exact (div_lt_iff' K₁H_pos).mp final
   linarith
-
-
-
-
 
 
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
@@ -106,7 +99,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     have fact2 : x < (3/4:ℝ)  := LE.le.trans_lt B fact
     linarith
 
-
   have main_antimain_disjoint : Disjoint main antimain := by
     intro S hS hS'
     by_contra opp
@@ -122,8 +114,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     linarith
     simp at D
     linarith
-
-
 
   --The below lemmas depend on here: https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
   have cutoff_exists : ∃ ρ : ℝ → ℝ, ContDiff ℝ ⊤ ρ ∧ EqOn ρ 0 ruffling ∧ EqOn ρ 1 unruffling ∧ ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
@@ -143,7 +133,28 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have hθ₁_diff : ContDiff ℝ ⊤ θ₁ := hθ₁.2.1
   have hθ₁_decomp : ∀ (t : ℝ), deriv γ₁ t = ↑‖deriv γ₁ t‖ * cexp (I * ↑(θ₁ t)) := hθ₁.2.2
 
-  -- have critical : ∃ K₁ > 0, K₂ ≥ 0, K₃ ≥ 0, ∀ H, ∀ N, ∀ s, t, ‖deriv γ s t (wrt t)‖ ≥ K₁ * N * H - K₂ * H - K₃
+  have fact {A : ℂ} : 0 = A + (-A) := sorry
+
+  have triangle' {A B : ℂ} : ‖B‖ ≤ ‖A + B‖ + ‖A‖ := by
+    calc
+    ‖B‖ = ‖B + (0 : ℂ)‖ := congrArg Norm.norm (self_eq_add_right.mpr rfl)
+    _ = ‖B + (A + (-A))‖ := congrArg Norm.norm (congrArg (HAdd.hAdd B) fact) --these have to exist somewhere but docs have not been friendly
+    _ = ‖(A + B) + (-A)‖ := by group
+    _ ≤ ‖A + B‖ + ‖-A‖ := sorry --the triangle inequality ‖A + B‖ ≤ ‖A‖ + ‖B‖
+    _ = ‖A + B‖ + ‖A‖ := sorry -- rw ‖A‖ = ‖-A‖ or something, idk, lean been losing its mind and times out on most exact?s I call even with 80% of the file commented, think im just gonna kms
+
+  have triangle {A B : ℂ} : ‖B‖ - ‖A‖ ≤ ‖A + B‖ := by exact tsub_le_iff_right.mpr triangle'
+
+  have in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C‖ := by
+    calc
+    ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖B + C‖ - ‖A‖ := sorry --triangle
+    _ ≤ ‖A + (B + C)‖ := by exact triangle
+    _ = ‖A + B + C‖ := sorry --no sir
+
+  -- have critical : ∃ K₁ > 0, ∀ H > 0, ∀ N, ∀ s, t, ‖deriv γ s t (wrt t)‖ ≥ K₁ * N * H - K₂ * H - K₃
+    --when we get to this part, we will need ‖A + B‖ ≥ ‖A‖ - ‖B‖; this comes from the triangle inequality: ‖A‖ + ‖B‖ ≥ ‖A + B‖ (defined for normed groups as norm_mul_le')
+      --‖A + B‖ + ‖B‖ = ‖A + B‖ + ‖-B‖ ≥ ‖(A + B) + (-B)‖ = ‖A‖, so ‖A + B‖ + ‖B‖ ≥ ‖A‖, so ‖A + B‖ ≥ ‖A‖ + ‖B‖
+    --from this, ‖A + B + C‖ ≥ ‖A‖ - ‖B‖ - ‖C‖ (or some rearrangement thereof)
   -- fix γ₀, γ₁, and ρ
   -- ∀ H > 0, ∃ N₀, ∀ N ≥ N₀, K₁ * N * H - K₂ * H - K₃ > 0
   -- need that ∀ s, γ s is an immersed circle (of t) (and of course, γ 0 = γ₀ and same for 1)
