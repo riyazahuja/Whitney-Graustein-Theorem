@@ -135,10 +135,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have hθ₁_diff : ContDiff ℝ ⊤ θ₁ := hθ₁.2.1
   have hθ₁_decomp : ∀ (t : ℝ), deriv γ₁ t = ↑‖deriv γ₁ t‖ * cexp (I * ↑(θ₁ t)) := hθ₁.2.2
 
-
-
-
-
   have fact {A : ℂ} : 0 = A + (-A) := by norm_num
 
 
@@ -158,7 +154,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
 
-  -- have critical : ∃ K₁ > 0, ∀ H > 0, ∀ N, ∀ s, t, ‖deriv γ s t (wrt t)‖ ≥ K₁ * N * H - K₂ * H - K₃
+  -- have critical : ∃ K₁ > 0, ∀ H > 0, ∀ N, ∀ s, t, ‖deriv γ s t (wrt t)‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
     --when we get to this part, we will need ‖A + B‖ ≥ ‖A‖ - ‖B‖; this comes from the triangle inequality: ‖A‖ + ‖B‖ ≥ ‖A + B‖ (defined for normed groups as norm_mul_le')
       --‖A + B‖ + ‖B‖ = ‖A + B‖ + ‖-B‖ ≥ ‖(A + B) + (-B)‖ = ‖A‖, so ‖A + B‖ + ‖B‖ ≥ ‖A‖, so ‖A + B‖ ≥ ‖A‖ + ‖B‖
     --from this, ‖A + B + C‖ ≥ ‖A‖ - ‖B‖ - ‖C‖ (or some rearrangement thereof)
@@ -173,18 +169,19 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let (R : ℝ → ℂ) := fun θ ↦ exp (I * (θ : ℝ))
   let ruffle : ℝ → ℂ := fun t ↦ -Real.sin (4 * π * t) + I * 2 * Real.sin (2 * π * t)
 
-
-
-
-
-
-
+  let unit_compact : IsCompact unit := isCompact_Icc
+  let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
+  have ctson_unit {s : ℝ} : ContinuousOn (ϝ s) unit := sorry
+  have K₃_exists {s : ℝ} : ∃ K₃, ∀ (t : ℝ), K₃ ≤ ‖deriv (ϝ s) t‖ := IsCompact.exists_isMinOn (unit_compact nonempty_of_nonempty_subtype ctson_unit)
+  rcases (IsCompact.exists_isMinOn unit_compact nonempty_of_nonempty_subtype (deriv (ϝ s) cts on unit)) with ⟨K₃, hK₃⟩
 
   let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
   use γ
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
-  · sorry --HtpyCircleImmersion (γ : ℝ → ℝ → ℂ)
+  · sorry
+
+  --HtpyCircleImmersion (γ : ℝ → ℝ → ℂ)
     --requires diff : ContDiff ℝ ⊤ (uncurry γ)
       --should fall out of some composition stuff
     -- requires imm : ∀ s, CircleImmersion (γ s)
