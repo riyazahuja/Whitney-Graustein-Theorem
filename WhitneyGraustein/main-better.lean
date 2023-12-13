@@ -2,7 +2,9 @@ import Mathlib
 
 open Set Function Complex Real Order
 
-open Topology
+open Topology NormedSpace
+
+open Mathlib
 
 
 structure CircleImmersion (γ : ℝ → ℂ) : Prop where
@@ -133,23 +135,28 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have hθ₁_diff : ContDiff ℝ ⊤ θ₁ := hθ₁.2.1
   have hθ₁_decomp : ∀ (t : ℝ), deriv γ₁ t = ↑‖deriv γ₁ t‖ * cexp (I * ↑(θ₁ t)) := hθ₁.2.2
 
-  have fact {A : ℂ} : 0 = A + (-A) := sorry
+
+
+
+
+  have fact {A : ℂ} : 0 = A + (-A) := by norm_num
+
 
   have triangle' {A B : ℂ} : ‖B‖ ≤ ‖A + B‖ + ‖A‖ := by
-    calc
-    ‖B‖ = ‖B + (0 : ℂ)‖ := congrArg Norm.norm (self_eq_add_right.mpr rfl)
-    _ = ‖B + (A + (-A))‖ := congrArg Norm.norm (congrArg (HAdd.hAdd B) fact) --these have to exist somewhere but docs have not been friendly
-    _ = ‖(A + B) + (-A)‖ := by group
-    _ ≤ ‖A + B‖ + ‖-A‖ := sorry --the triangle inequality ‖A + B‖ ≤ ‖A‖ + ‖B‖
-    _ = ‖A + B‖ + ‖A‖ := sorry -- rw ‖A‖ = ‖-A‖ or something, idk, lean been losing its mind and times out on most exact?s I call even with 80% of the file commented, think im just gonna kms
+    have fact := norm_add_le (A+B) (-A)
+    simp at fact
+    exact fact
 
   have triangle {A B : ℂ} : ‖B‖ - ‖A‖ ≤ ‖A + B‖ := by exact tsub_le_iff_right.mpr triangle'
 
   have in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C‖ := by
+    have duh : ‖C‖ - ‖B‖ ≤ ‖B + C‖  := triangle
     calc
-    ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖B + C‖ - ‖A‖ := sorry --triangle
-    _ ≤ ‖A + (B + C)‖ := by exact triangle
-    _ = ‖A + B + C‖ := sorry --no sir
+      ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖B + C‖ - ‖A‖ := by exact sub_le_sub_right triangle ‖A‖
+      _ ≤ ‖A + (B + C)‖ := by exact triangle
+      _ = ‖A + B + C‖ := by exact congrArg Norm.norm (add_assoc A B C).symm
+
+
 
   -- have critical : ∃ K₁ > 0, ∀ H > 0, ∀ N, ∀ s, t, ‖deriv γ s t (wrt t)‖ ≥ K₁ * N * H - K₂ * H - K₃
     --when we get to this part, we will need ‖A + B‖ ≥ ‖A‖ - ‖B‖; this comes from the triangle inequality: ‖A‖ + ‖B‖ ≥ ‖A + B‖ (defined for normed groups as norm_mul_le')
@@ -165,6 +172,14 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   let (R : ℝ → ℂ) := fun θ ↦ exp (I * (θ : ℝ))
   let ruffle : ℝ → ℂ := fun t ↦ -Real.sin (4 * π * t) + I * 2 * Real.sin (2 * π * t)
+
+
+
+
+
+
+
+
   let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
   use γ
   constructor
