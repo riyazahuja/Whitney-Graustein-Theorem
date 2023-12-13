@@ -170,16 +170,41 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     have fact1 : Continuous (uncurry (fun s t ↦ deriv (ϝ s) t)) := by
 
 
-
-
-      let inter₃ := fun s t ↦  (1 - (ρ s)) * (deriv γ₀ t) + (ρ s) * deriv γ₁ t
-      have exact_derivative : ∀ s, inter₃ s = deriv (ϝ s) := by sorry
-      /-How to show that deriv (ϝ s) = fun t ↦  (1 - (ρ s)) * (deriv γ₀ t) + (ρ s) * deriv γ₁ t -/
-
       have CDγ₀ := (contDiff_top_iff_deriv.1 (imm_γ₀.diff)).2
       have CDγ₁ := (contDiff_top_iff_deriv.1 (imm_γ₁.diff)).2
 
       have CDρ := (contDiff_top_iff_deriv.1 (hρ.1)).2
+
+
+
+      let inter₃ := fun s t ↦  (1 - (ρ s)) * (deriv γ₀ t) + (ρ s) * deriv γ₁ t
+      have exact_derivative : ∀ s, inter₃ s = deriv (ϝ s) := by
+        intro s
+        simp only
+        have duh : ∀x, deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t) x = deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t) x + deriv (fun t ↦ ↑(ρ s) * γ₁ t) x := by
+          intro x
+          have f1 : DifferentiableAt ℝ (fun t ↦ (1 - ↑(ρ s)) * γ₀ t) x := by
+            have diff_γ₀:= CDγ₀.differentiable (OrderTop.le_top (1:ℕ∞))
+            --have diff_ρ:= CDρ.differentiable (OrderTop.le_top (1:ℕ∞))
+
+
+            have diff_final : Differentiable ℝ (fun t ↦ (1 - ↑(ρ s)) * γ₀ t) := by
+              sorry
+
+
+
+
+
+
+
+          --have f2 : DifferentiableAt ℝ (fun t ↦ ↑(ρ s) * γ₁ t) x :=
+
+
+
+
+
+      /-How to show that deriv (ϝ s) = fun t ↦  (1 - (ρ s)) * (deriv γ₀ t) + (ρ s) * deriv γ₁ t -/
+
 
       /-Needs to use continuity facts of products and sums...-/
 
