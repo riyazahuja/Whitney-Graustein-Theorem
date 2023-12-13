@@ -72,50 +72,67 @@ lemma root_lemma_maybe {K₁ K₂ K₃: ℝ} (K₁_pos : K₁ > 0) (H_pos : H > 
   have final2: (K₃ + K₂ * H) < (K₁ * H) * N  := by exact (div_lt_iff' K₁H_pos).mp final
   linarith
 
+namespace WhitneyGraustein
+
+@[reducible] def unit : Set ℝ := Set.Icc 0 1
+@[reducible] def ruffling : Set ℝ := Set.Icc 0 (1/4:ℝ)
+@[reducible] def unruffling : Set ℝ := Set.Icc (3/4:ℝ) 1
+@[reducible] def main : Set ℝ := Set.Icc (1/4:ℝ) (3/4:ℝ)
+@[reducible] def antimain : Set ℝ := (Set.Iic 0) ∪ (Set.Ici 1)
+
+lemma ruffling_closed : IsClosed (Set.Icc 0 (1/4:ℝ)) := isClosed_Icc
+lemma unruffling_closed : IsClosed (Set.Icc (3/4:ℝ) 1) := isClosed_Icc
+lemma main_closed : IsClosed (Set.Icc (1/4:ℝ) (3/4:ℝ)) := isClosed_Icc
+
+lemma ruffling_unruffling_disjoint : Disjoint ruffling unruffling := by
+  intro S hS hS'
+  by_contra opp
+  push_neg at opp
+
+  rcases (not_forall_not.mp opp) with ⟨x,hx⟩
+  specialize hS hx
+  specialize hS' hx
+  rcases hS with ⟨_,B⟩
+  rcases hS' with ⟨C,_⟩
+  have fact : (1/4:ℝ) < (3/4:ℝ) := by norm_num
+  have fact2 : x < (3/4:ℝ)  := LE.le.trans_lt B fact
+  linarith
+
+lemma main_antimain_disjoint : Disjoint main antimain := by
+  intro S hS hS'
+  by_contra opp
+  push_neg at opp
+
+  rcases (not_forall_not.mp opp) with ⟨x,hx⟩
+  specialize hS hx
+  specialize hS' hx
+  rcases hS with ⟨A,B⟩
+  rcases hS' with C|D
+
+  simp at C
+  linarith
+  simp at D
+  linarith
+
+lemma triangle' {A B : ℂ} : ‖B‖ ≤ ‖A + B‖ + ‖A‖ := by
+  have fact := norm_add_le (A+B) (-A)
+  simp at fact
+  exact fact
+
+lemma triangle {A B : ℂ} : ‖B‖ - ‖A‖ ≤ ‖A + B‖ :=
+  tsub_le_iff_right.mpr triangle'
+
+lemma in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C‖ :=
+  calc
+    ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖B + C‖ - ‖A‖ := sub_le_sub_right triangle ‖A‖
+    _ ≤ ‖A + (B + C)‖ := triangle
+    _ = ‖A + B + C‖ := congrArg Norm.norm (add_assoc A B C).symm
 
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ (γ 0 = γ₀ ∧ γ 1 = γ₁) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
   -- get that unit is closed, and two disjoint closed subintervals "ruffling" and "unruffling"
-  let unit : Set ℝ := Set.Icc 0 1
-  let ruffling : Set ℝ := Set.Icc 0 (1/4:ℝ)
-  let unruffling : Set ℝ := Set.Icc (3/4:ℝ) 1
-  let main : Set ℝ := Set.Icc (1/4:ℝ) (3/4:ℝ)
-  let antimain : Set ℝ := (Set.Iic 0) ∪ (Set.Ici 1)
 
-  have ruffling_closed : IsClosed (Set.Icc 0 (1/4:ℝ)) := isClosed_Icc
-  have unruffling_closed : IsClosed (Set.Icc (3/4:ℝ) 1) := isClosed_Icc
-  have main_closed : IsClosed (Set.Icc (1/4:ℝ) (3/4:ℝ)) := isClosed_Icc
-
-  have ruffling_unruffling_disjoint : Disjoint ruffling unruffling := by
-    intro S hS hS'
-    by_contra opp
-    push_neg at opp
-
-    rcases (not_forall_not.mp opp) with ⟨x,hx⟩
-    specialize hS hx
-    specialize hS' hx
-    rcases hS with ⟨_,B⟩
-    rcases hS' with ⟨C,_⟩
-    have fact : (1/4:ℝ) < (3/4:ℝ) := by norm_num
-    have fact2 : x < (3/4:ℝ)  := LE.le.trans_lt B fact
-    linarith
-
-  have main_antimain_disjoint : Disjoint main antimain := by
-    intro S hS hS'
-    by_contra opp
-    push_neg at opp
-
-    rcases (not_forall_not.mp opp) with ⟨x,hx⟩
-    specialize hS hx
-    specialize hS' hx
-    rcases hS with ⟨A,B⟩
-    rcases hS' with C|D
-
-    simp at C
-    linarith
-    simp at D
-    linarith
 
   --The below lemmas depend on here: https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
   have cutoff_exists : ∃ ρ : ℝ → ℝ, ContDiff ℝ ⊤ ρ ∧ EqOn ρ 0 ruffling ∧ EqOn ρ 1 unruffling ∧ ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
@@ -136,23 +153,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have hθ₁_decomp : ∀ (t : ℝ), deriv γ₁ t = ↑‖deriv γ₁ t‖ * cexp (I * ↑(θ₁ t)) := hθ₁.2.2
 
   have fact {A : ℂ} : 0 = A + (-A) := by norm_num
-
-
-  have triangle' {A B : ℂ} : ‖B‖ ≤ ‖A + B‖ + ‖A‖ := by
-    have fact := norm_add_le (A+B) (-A)
-    simp at fact
-    exact fact
-
-  have triangle {A B : ℂ} : ‖B‖ - ‖A‖ ≤ ‖A + B‖ := by exact tsub_le_iff_right.mpr triangle'
-
-  have in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C‖ := by
-    have duh : ‖C‖ - ‖B‖ ≤ ‖B + C‖  := triangle
-    calc
-      ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖B + C‖ - ‖A‖ := by exact sub_le_sub_right triangle ‖A‖
-      _ ≤ ‖A + (B + C)‖ := by exact triangle
-      _ = ‖A + B + C‖ := by exact congrArg Norm.norm (add_assoc A B C).symm
-
-
 
   -- have critical : ∃ K₁ > 0, ∀ H > 0, ∀ N, ∀ s, t, ‖deriv γ s t (wrt t)‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
     --when we get to this part, we will need ‖A + B‖ ≥ ‖A‖ - ‖B‖; this comes from the triangle inequality: ‖A‖ + ‖B‖ ≥ ‖A + B‖ (defined for normed groups as norm_mul_le')
@@ -215,3 +215,5 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     · sorry --γ 1 = γ₁
 
 --Maybe of note: exp (I * h.lift t) is a local homeomorphism
+
+end WhitneyGraustein
