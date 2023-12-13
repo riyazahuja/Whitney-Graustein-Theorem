@@ -164,11 +164,11 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   let unit_compact : IsCompact unit := isCompact_Icc
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
-  let normϝ := fun s t ↦ ‖deriv (ϝ s) t‖
-  have cont : Continuous (uncurry normϝ) := sorry
+  let normA := fun s t ↦ ‖deriv (ϝ s) t‖
+  have cont : Continuous (uncurry normA) := sorry
   rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
-  let K₃ := normϝ s₃ t₃
+  let K₃ := normA s₃ t₃
 
   let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
   use γ
