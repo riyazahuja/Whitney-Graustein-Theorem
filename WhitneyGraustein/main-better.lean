@@ -171,9 +171,10 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   let unit_compact : IsCompact unit := isCompact_Icc
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
-  have ctson_unit {s : ℝ} : ContinuousOn (ϝ s) unit := sorry
-  have K₃_exists {s : ℝ} : ∃ K₃, ∀ (t : ℝ), K₃ ≤ ‖deriv (ϝ s) t‖ := IsCompact.exists_isMinOn (unit_compact nonempty_of_nonempty_subtype ctson_unit)
-  rcases (IsCompact.exists_isMinOn unit_compact nonempty_of_nonempty_subtype (deriv (ϝ s) cts on unit)) with ⟨K₃, hK₃⟩
+  have ctson_unit {s : ℝ} : ContinuousOn (deriv (ϝ s)) unit := sorry
+  let normϝs {s : ℝ} := fun t ↦ ‖deriv (ϝ s) t‖
+  have K₃_exists {s : ℝ} : ∃ K₃, IsMinOn normϝs unit K₃ := IsCompact.exists_isMinOn (unit_compact) nonempty_of_nonempty_subtype ctson_unit
+  rcases K₃_exists with ⟨K₃, hK₃⟩
 
   let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
   use γ
