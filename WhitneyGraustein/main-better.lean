@@ -49,7 +49,7 @@ implies that K₁HN - K₂H - K₃ > 0
 This is required to construct our gamma function and for the main phase.
 -/
 
-lemma root_lemma_maybe {K₁ K₂ K₃: ℝ} (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
+lemma root_lemma_maybe (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
   /- Claim that N₀ = max (⌊(K₃ + K₂ * H) / (K₁ * H) + 1⌋) (0)
 
@@ -138,7 +138,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have cutoff_exists : ∃ ρ : ℝ → ℝ, ContDiff ℝ ⊤ ρ ∧ EqOn ρ 0 ruffling ∧ EqOn ρ 1 unruffling ∧ ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
   rcases cutoff_exists with ⟨ρ, hρ⟩
   have fact : ∃ (H : ℝ), H > 0 := Exists.intro 1 Real.zero_lt_one
-  rcases fact with ⟨H, hH⟩
+  rcases fact with ⟨H, H_pos⟩
   have bump_exists : ∃ h : ℝ → ℝ, ContDiff ℝ ⊤ h ∧ (∀ᶠ x in 𝓝ˢ main, h x = 0) ∧ (∀ᶠ x in 𝓝ˢ antimain, h x = H) ∧ ∀ x, h x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one_nhds (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
   rcases bump_exists with ⟨h, hh⟩
 
@@ -147,7 +147,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   have fact {A : ℂ} : 0 = A + (-A) := by norm_num
 
-  -- have critical : ∀ K₁ > 0, ∀ H > 0, ∀ N ≥ N₀ , ∀ s, ∀ t, ‖deriv (γ s) t‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
+  -- have critical : ∀ K₁ > 0, ∀ H > 0, ∀ N > N₀, ∀ s, ∀ t, ‖deriv (γ s) t‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
     --when we get to this part, we will need ‖A + B‖ ≥ ‖A‖ - ‖B‖; this comes from the triangle inequality: ‖A‖ + ‖B‖ ≥ ‖A + B‖ (defined for normed groups as norm_mul_le')
       --‖A + B‖ + ‖B‖ = ‖A + B‖ + ‖-B‖ ≥ ‖(A + B) + (-B)‖ = ‖A‖, so ‖A + B‖ + ‖B‖ ≥ ‖A‖, so ‖A + B‖ ≥ ‖A‖ + ‖B‖
     --from this, ‖A + B + C‖ ≥ ‖A‖ - ‖B‖ - ‖C‖ (or some rearrangement thereof)
@@ -184,11 +184,17 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have cont : Continuous (uncurry normB) := sorry
   rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
-  let K₁ := normB s₁ t₁
+  let K₁ := normC s₁ t₁
+
+  have K₁_pos : K₁ > 0 := by
+    have justtobesure : K₁ = ‖(R (θ s₁ t₁)) * 2 * π * (deriv ruffle t₁)‖ := rfl
+    sorry
+
+  rcases (root_lemma_maybe K₁ K₂ K₃ K₁_pos H_pos) with ⟨N₀, hN₀⟩
 
   --Prove K₁ is positive and do the same for H (or set H = 1), get N₀, then N
 
-  let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
+  let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle ((N₀+1) * t)
   use γ
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
