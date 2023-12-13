@@ -142,19 +142,12 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have bump_exists : ∃ h : ℝ → ℝ, ContDiff ℝ ⊤ h ∧ (∀ᶠ x in 𝓝ˢ main, h x = 0) ∧ (∀ᶠ x in 𝓝ˢ antimain, h x = H) ∧ ∀ x, h x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one_nhds (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
   rcases bump_exists with ⟨h, hh⟩
 
-  rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀⟩
-  have hθ₀_lift_is_lift : θ₀ = CircleImmersion.lift imm_γ₀ := hθ₀.1
-  have hθ₀_diff : ContDiff ℝ ⊤ θ₀ := hθ₀.2.1
-  have hθ₀_decomp : ∀ (t : ℝ), deriv γ₀ t = ↑‖deriv γ₀ t‖ * cexp (I * ↑(θ₀ t)) := hθ₀.2.2
-
-  rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁⟩
-  have hθ₁_lift_is_lift : θ₁ = CircleImmersion.lift imm_γ₁ := hθ₁.1
-  have hθ₁_diff : ContDiff ℝ ⊤ θ₁ := hθ₁.2.1
-  have hθ₁_decomp : ∀ (t : ℝ), deriv γ₁ t = ↑‖deriv γ₁ t‖ * cexp (I * ↑(θ₁ t)) := hθ₁.2.2
+  rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
+  rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
 
   have fact {A : ℂ} : 0 = A + (-A) := by norm_num
 
-  -- have critical : ∃ K₁ > 0, ∀ H > 0, ∀ N, ∀ s, t, ‖deriv γ s t (wrt t)‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
+  -- have critical : ∀ K₁ > 0, ∀ H > 0, ∀ N ≥ N₀ , ∀ s, ∀ t, ‖deriv (γ s) t‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
     --when we get to this part, we will need ‖A + B‖ ≥ ‖A‖ - ‖B‖; this comes from the triangle inequality: ‖A‖ + ‖B‖ ≥ ‖A + B‖ (defined for normed groups as norm_mul_le')
       --‖A + B‖ + ‖B‖ = ‖A + B‖ + ‖-B‖ ≥ ‖(A + B) + (-B)‖ = ‖A‖, so ‖A + B‖ + ‖B‖ ≥ ‖A‖, so ‖A + B‖ ≥ ‖A‖ + ‖B‖
     --from this, ‖A + B + C‖ ≥ ‖A‖ - ‖B‖ - ‖C‖ (or some rearrangement thereof)
@@ -171,11 +164,11 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   let unit_compact : IsCompact unit := isCompact_Icc
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
-  let normϝ (s : ℝ) := fun t ↦ ‖deriv (ϝ s) t‖
-  have ctson_unit {s : ℝ} : ContinuousOn (normϝ s) unit := sorry
-  have K₃_exists {s : ℝ} : ∃ t ∈ unit, IsMinOn (normϝ s) unit t := IsCompact.exists_isMinOn (unit_compact) nonempty_of_nonempty_subtype ctson_unit
-  rcases K₃_exists with ⟨t₃, ht₃⟩
-  let K₃ := fun s ↦ normϝ s t₃
+  let normϝ := fun s t ↦ ‖deriv (ϝ s) t‖
+  have cont : Continuous (uncurry normϝ) := sorry
+  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
+    ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
+  let K₃ := normϝ s₃ t₃
 
   let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
   use γ
