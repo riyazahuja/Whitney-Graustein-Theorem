@@ -164,11 +164,29 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   let unit_compact : IsCompact unit := isCompact_Icc
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
-  let normA := fun s t ↦ ‖deriv (ϝ s) t‖
+
+  let A := fun s t ↦ deriv (ϝ s) t
+  let normA := fun s t ↦ ‖A s t‖
   have cont : Continuous (uncurry normA) := sorry
-  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
+  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
   let K₃ := normA s₃ t₃
+
+  let B := fun s t ↦ (deriv (θ s) t) * (R ((θ s t) + π / 2)) * (ruffle t) --NOTICE H IS NOT INCLUDED IN THIS STATEMENT.
+  let normB := fun s t ↦ ‖B s t‖
+  have cont : Continuous (uncurry normB) := sorry
+  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
+    ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
+  let K₂ := normB s₂ t₂
+
+  let C := fun s t ↦ (R (θ s t)) * 2 * π * (deriv ruffle t) --NOTICE NEITHER H NOR N IS NOT INCLUDED IN THIS STATEMENT.
+  let normC := fun s t ↦ ‖C s t‖
+  have cont : Continuous (uncurry normB) := sorry
+  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
+    ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
+  let K₁ := normB s₁ t₁
+
+  --Prove K₁ is positive and do the same for H (or set H = 1), get N₀, then N
 
   let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
   use γ
