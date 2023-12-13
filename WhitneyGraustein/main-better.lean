@@ -129,10 +129,10 @@ lemma in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C
     _ = ‖A + B + C‖ := congrArg Norm.norm (add_assoc A B C).symm
 
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
-  (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ (γ 0 = γ₀ ∧ γ 1 = γ₁) := by
+  (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
   -- get that unit is closed, and two disjoint closed subintervals "ruffling" and "unruffling"
-
+  --have dfact (x : ℝ) : deriv (fun (x : ℝ) ↦ (x ^ 2)) = fun x ↦ 2 * x := by simp
 
   --The below lemmas depend on here: https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
   have cutoff_exists : ∃ ρ : ℝ → ℝ, ContDiff ℝ ⊤ ρ ∧ EqOn ρ 0 ruffling ∧ EqOn ρ 1 unruffling ∧ ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
@@ -199,7 +199,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
   · sorry
-
   --HtpyCircleImmersion (γ : ℝ → ℝ → ℂ)
     --requires diff : ContDiff ℝ ⊤ (uncurry γ)
       --should fall out of some composition stuff
@@ -228,8 +227,29 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
           --exists since (ρ s) and γ₀ and γ₁ are all bounded on the period, etc or whatever
         --using root_lemma_maybe (or whatever it renamed to), get N₀ and define γ, carry out some triangle inequality argument showing that ∀ s, ‖deriv (γ s) t‖ > 0, and hence nonzero.
   · constructor
-    · sorry --γ 0 = γ₀
-    · sorry --γ 1 = γ₁
+    · intro t
+      calc
+      γ 0 t = ϝ 0 t + (h 0) * (R (θ 0 t)) * ruffle ((N₀+1) * t) := sorry --dont know what to tell you... it is... B)
+      _ = ϝ 0 t + 0 * (R (θ 0 t)) * ruffle ((N₀+1) * t) := sorry --h 0 = 0
+      _ = ϝ 0 t + 0 := sorry --you know how it is
+      _ = ϝ 0 t := sorry --naturally
+      _ = (1 - (ρ 0)) * (γ₀ t) + (ρ 0) * γ₁ t := sorry --dont know what to tell you... it is... B)
+      _ = (1 - 0) * (γ₀ t) + 0 * γ₁ t := sorry
+      _ = 1 * (γ₀ t) + 0 := sorry
+      _ = (γ₀ t) + 0 := sorry
+      _ = γ₀ t := sorry
+    · intro t
+      calc
+      γ 1 t = ϝ 1 t + (h 1) * (R (θ 1 t)) * ruffle ((N₀+1) * t) := sorry --dont know what to tell you... it is... B)
+      _ = ϝ 1 t + 0 * (R (θ 1 t)) * ruffle ((N₀+1) * t) := sorry --h 0 = 0
+      _ = ϝ 1 t + 0 := sorry --you know how it is
+      _ = ϝ 1 t := sorry --naturally
+      _ = (1 - (ρ 1)) * (γ₀ t) + (ρ 1) * γ₁ t := sorry --dont know what to tell you... it is... B)
+      _ = (1 - 1) * (γ₀ t) + 1 * γ₁ t := sorry
+      _ = 0 * (γ₀ t) + 1 * γ₁ t := sorry
+      _ = 0 + 1 * γ₁ t := sorry
+      _ = 1 * γ₁ t := sorry
+      _ = γ₁ t := sorry
 
 --Maybe of note: exp (I * h.lift t) is a local homeomorphism
 
