@@ -1,6 +1,6 @@
 import Mathlib
 
-open Set Function Complex Real
+open Set Function Complex Real Order
 
 open Topology
 
@@ -39,34 +39,91 @@ structure HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ (uncurry γ)
   imm : ∀ s, CircleImmersion (γ s)
 
+
+
+
+
+
+/-
+∀K₁, K₂, K₃ : ℝ, with K₁ > 0, and ∀H > 0, we claim that  there exists some N₀ such that N ≥ N₀
+implies that K₁HN - K₂H - K₃ > 0
+
+This is required to construct our gamma function and for the main phase.
+-/
 lemma root_lemma_maybe {K₁ K₂ K₃: ℝ} (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
-  use Nat.floor ((K₃ + K₂ * H) / (K₁ * H) + 1)
+  /- Claim that N₀ = max (⌊(K₃ + K₂ * H) / (K₁ * H) + 1⌋) (0)
+
+  Note that:
+  N₀ > (K₃ + K₂ * H) / (K₁ * H)
+  ↔ K₁*HN > K₃ + K₂ * H
+  ↔  K₁*HN - K₂ * H -  K₃ > 0
+  -/
+  let N₀ := Nat.floor (max ((K₃ + K₂ * H) / (K₁ * H) + 1) (0) )
+  use N₀
   intro N hN
-  have fact'₂ : K₁ * H * ((K₃ + K₂ * H) / (K₁ * H)) = (K₃ + K₂ * H) := mul_div_cancel' (K₃ + K₂ * H) (ne_of_gt K₁H_pos)
-  have fact₃ : K₁ * H * ((K₃ + K₂ * H) / (K₁ * H)) + (K₁ * H) = (K₃ + K₂ * H) + (K₁ * H) := congrFun (congrArg HAdd.hAdd fact'₂) (K₁ * H)
-  have fact₄₇ : (K₁ * H) * ((K₃ + K₂ * H) / (K₁ * H) + 1) = (K₃ + K₂ * H) + (K₁ * H) := (Eq.congr (mul_add_one (K₁ * H) ((K₃ + K₂ * H) / (K₁ * H))) rfl).mpr fact₃
-  have facttt : (K₃ + K₂ * H) + (K₁ * H) < (K₁ * H) * ↑N := Eq.trans_lt (id fact₄₇.symm) ((mul_lt_mul_left K₁H_pos).mpr ((Nat.floor_lt' (Nat.not_eq_zero_of_lt hN)).1 hN))
-  have factttt : K₃ + K₂ * H < K₁ * H * ↑N := gt_trans (sub_lt_self (K₁ * H * ↑N) K₁H_pos) (lt_tsub_iff_right.mpr facttt)
-  exact sub_pos.mpr ((Eq.trans_lt (id (add_comm K₃ (K₂ * H)).symm)) factttt)
-  -- proof, indeed.
+
+  have apply_floor_lt :=
+    (Nat.floor_lt (le_max_right ((K₃ + K₂ * H) / (K₁ * H) + 1) 0)).1 (gt_iff_lt.1 hN)
+
+  have context: (K₃ + K₂ * H) / (K₁ * H) + 1 ≤ max ((K₃ + K₂ * H) / (K₁ * H) + 1) 0 := by
+    exact le_max_left ((K₃ + K₂ * H) / (K₁ * H) + 1) 0
+
+  have final: (K₃ + K₂ * H) / (K₁ * H) < N := by linarith
+  have final2: (K₃ + K₂ * H) < (K₁ * H) * N  := by exact (div_lt_iff' K₁H_pos).mp final
+  linarith
+
+
+
+
+
 
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ (γ 0 = γ₀ ∧ γ 1 = γ₁) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
   -- get that unit is closed, and two disjoint closed subintervals "ruffling" and "unruffling"
   let unit : Set ℝ := Set.Icc 0 1
-  let ruffling : Set ℝ := Set.Icc 0 (1/4)
-  let unruffling : Set ℝ := Set.Icc (3/4) 1
-  let main : Set ℝ := Set.Icc (1/4) (3/4)
+  let ruffling : Set ℝ := Set.Icc 0 (1/4:ℝ)
+  let unruffling : Set ℝ := Set.Icc (3/4:ℝ) 1
+  let main : Set ℝ := Set.Icc (1/4:ℝ) (3/4:ℝ)
   let antimain : Set ℝ := (Set.Iic 0) ∪ (Set.Ici 1)
 
-  have ruffling_closed : IsClosed (Set.Icc 0 (1/4)) := isClosed_Icc
-  have unruffling_closed : IsClosed (Set.Icc (3/4) 1) := isClosed_Icc
-  have main_closed : IsClosed (Set.Icc (1/4) (3/4)) := isClosed_Icc
+  have ruffling_closed : IsClosed (Set.Icc 0 (1/4:ℝ)) := isClosed_Icc
+  have unruffling_closed : IsClosed (Set.Icc (3/4:ℝ) 1) := isClosed_Icc
+  have main_closed : IsClosed (Set.Icc (1/4:ℝ) (3/4:ℝ)) := isClosed_Icc
 
-  have ruffling_unruffling_disjoint : Disjoint ruffling unruffling := sorry
-  have main_antimain_disjoint : Disjoint main antimain := sorry
+  have ruffling_unruffling_disjoint : Disjoint ruffling unruffling := by
+    intro S hS hS'
+    by_contra opp
+    push_neg at opp
+
+    rcases (not_forall_not.mp opp) with ⟨x,hx⟩
+    specialize hS hx
+    specialize hS' hx
+    rcases hS with ⟨_,B⟩
+    rcases hS' with ⟨C,_⟩
+    have fact : (1/4:ℝ) < (3/4:ℝ) := by norm_num
+    have fact2 : x < (3/4:ℝ)  := LE.le.trans_lt B fact
+    linarith
+
+
+  have main_antimain_disjoint : Disjoint main antimain := by
+    intro S hS hS'
+    by_contra opp
+    push_neg at opp
+
+    rcases (not_forall_not.mp opp) with ⟨x,hx⟩
+    specialize hS hx
+    specialize hS' hx
+    rcases hS with ⟨A,B⟩
+    rcases hS' with C|D
+
+    simp at C
+    linarith
+    simp at D
+    linarith
+
+
 
   --The below lemmas depend on here: https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
   have cutoff_exists : ∃ ρ : ℝ → ℝ, ContDiff ℝ ⊤ ρ ∧ EqOn ρ 0 ruffling ∧ EqOn ρ 1 unruffling ∧ ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
