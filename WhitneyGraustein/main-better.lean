@@ -156,7 +156,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   -- need that ∀ s, γ s is an immersed circle (of t) (and of course, γ 0 = γ₀ and same for 1)
   -- the extreme value theorem on (1-ρ(s)) * γ₀(t) + ρ(s) * γ₁(t) provides some maximum independent of N and H that we call K₃
 
-  let (ϝ : ℝ → ℝ → ℂ) := fun s t ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t
+  let ϝ := fun s t ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t
   let (θ : ℝ → ℝ → ℝ) := fun s t ↦ (1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t)
 
   let (R : ℝ → ℂ) := fun θ ↦ exp (I * (θ : ℝ))
@@ -165,7 +165,26 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let unit_compact : IsCompact unit := isCompact_Icc
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
   let normA := fun s t ↦ ‖deriv (ϝ s) t‖
-  have cont : Continuous (uncurry normA) := sorry
+  have cont : Continuous (uncurry normA) := by
+
+    have fact1 : Continuous (uncurry (fun s t ↦ deriv (ϝ s) t)) := by sorry
+
+    have fact2 := Continuous.norm fact1
+    have fact3 : (fun x ↦ ‖uncurry (fun s t ↦ deriv (ϝ s) t) x‖) = uncurry normA := by
+      simp only
+      exact rfl
+
+    rw [← fact3]
+    exact fact2
+
+
+
+
+
+
+
+
+
   rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
   let K₃ := normA s₃ t₃
