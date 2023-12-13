@@ -167,7 +167,27 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let normA := fun s t ↦ ‖deriv (ϝ s) t‖
   have cont : Continuous (uncurry normA) := by
 
-    have fact1 : Continuous (uncurry (fun s t ↦ deriv (ϝ s) t)) := by sorry
+    have fact1 : Continuous (uncurry (fun s t ↦ deriv (ϝ s) t)) := by
+
+
+
+
+      let inter₃ := fun s t ↦  (1 - (ρ s)) * (deriv γ₀ t) + (ρ s) * deriv γ₁ t
+      have exact_derivative : ∀ s, inter₃ s = deriv (ϝ s) := by sorry
+      /-How to show that deriv (ϝ s) = fun t ↦  (1 - (ρ s)) * (deriv γ₀ t) + (ρ s) * deriv γ₁ t -/
+
+      have CDγ₀ := (contDiff_top_iff_deriv.1 (imm_γ₀.diff)).2
+      have CDγ₁ := (contDiff_top_iff_deriv.1 (imm_γ₁.diff)).2
+
+      have CDρ := (contDiff_top_iff_deriv.1 (hρ.1)).2
+
+      /-Needs to use continuity facts of products and sums...-/
+
+
+
+
+
+
 
     have fact2 := Continuous.norm fact1
     have fact3 : (fun x ↦ ‖uncurry (fun s t ↦ deriv (ϝ s) t) x‖) = uncurry normA := by
