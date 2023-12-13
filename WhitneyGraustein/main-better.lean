@@ -173,8 +173,9 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
   let normϝ (s : ℝ) := fun t ↦ ‖deriv (ϝ s) t‖
   have ctson_unit {s : ℝ} : ContinuousOn (normϝ s) unit := sorry
-  have K₃_exists {s : ℝ} : ∃ x ∈ unit, IsMinOn (normϝ s) unit x := IsCompact.exists_isMinOn (unit_compact) nonempty_of_nonempty_subtype ctson_unit
-  rcases K₃_exists with ⟨K₃, hK₃⟩
+  have K₃_exists {s : ℝ} : ∃ t ∈ unit, IsMinOn (normϝ s) unit t := IsCompact.exists_isMinOn (unit_compact) nonempty_of_nonempty_subtype ctson_unit
+  rcases K₃_exists with ⟨t₃, ht₃⟩
+  let K₃ := fun s ↦ normϝ s t₃
 
   let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle (N * t)
   use γ
