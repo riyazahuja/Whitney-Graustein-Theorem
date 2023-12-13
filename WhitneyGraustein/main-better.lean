@@ -5,7 +5,7 @@ open Set Function Complex Real Order
 open Topology NormedSpace
 
 open Mathlib
-
+noncomputable section
 
 structure CircleImmersion (γ : ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ γ
@@ -128,19 +128,40 @@ lemma in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C
     _ ≤ ‖A + (B + C)‖ := triangle
     _ = ‖A + B + C‖ := congrArg Norm.norm (add_assoc A B C).symm
 
+def h : ℝ → ℝ := sorry
+
+lemma h_diff : ContDiff ℝ ⊤ h  := sorry
+
+lemma h_main : ∀ᶠ (x : ℝ) in 𝓝ˢ main, h x = 0 := sorry
+
+lemma h_antimain : ∀ᶠ (x : ℝ) in 𝓝ˢ antimain, h x = H := sorry
+
+lemma h_mem : ∀ (x : ℝ), h x ∈ Icc 0 1 := sorry
+
+def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2 * π * t)⟩
+
+def R : ℝ → ℂ := fun θ ↦ cexp (θ • I)
+
+-- See https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
+def ρ : ℝ → ℝ := sorry
+
+lemma ρ_diff : ContDiff ℝ ⊤ ρ := sorry
+
+lemma ρ_ruffling : EqOn ρ 0 ruffling := sorry
+
+lemma ρ_unruffling : EqOn ρ 1 unruffling := sorry
+
+lemma ρ_mem : ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry
+
+set_option trace.profiler true in
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
   -- get that unit is closed, and two disjoint closed subintervals "ruffling" and "unruffling"
   --have dfact (x : ℝ) : deriv (fun (x : ℝ) ↦ (x ^ 2)) = fun x ↦ 2 * x := by simp
 
-  --The below lemmas depend on here: https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
-  have cutoff_exists : ∃ ρ : ℝ → ℝ, ContDiff ℝ ⊤ ρ ∧ EqOn ρ 0 ruffling ∧ EqOn ρ 1 unruffling ∧ ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
-  rcases cutoff_exists with ⟨ρ, hρ⟩
-  have fact : ∃ (H : ℝ), H > 0 := Exists.intro 1 Real.zero_lt_one
-  rcases fact with ⟨H, H_pos⟩
-  have bump_exists : ∃ h : ℝ → ℝ, ContDiff ℝ ⊤ h ∧ (∀ᶠ x in 𝓝ˢ main, h x = 0) ∧ (∀ᶠ x in 𝓝ˢ antimain, h x = H) ∧ ∀ x, h x ∈ Icc (0 : ℝ) 1 := sorry--exists_contDiff_zero_one_nhds (hs : IsClosed s) (ht : IsClosed t) (hd : Disjoint s t)
-  rcases bump_exists with ⟨h, hh⟩
+  let H : ℝ := 1
+  have H_pos : 0 < H := Real.zero_lt_one
 
   rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
   rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
@@ -156,11 +177,10 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   -- need that ∀ s, γ s is an immersed circle (of t) (and of course, γ 0 = γ₀ and same for 1)
   -- the extreme value theorem on (1-ρ(s)) * γ₀(t) + ρ(s) * γ₁(t) provides some maximum independent of N and H that we call K₃
 
-  let (ϝ : ℝ → ℝ → ℂ) := fun s t ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t
+  let (ϝ : ℝ → ℝ → ℂ) := fun s t ↦ (1 - (ρ s)) • (γ₀ t) + (ρ s) • γ₁ t
   let (θ : ℝ → ℝ → ℝ) := fun s t ↦ (1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t)
 
-  let (R : ℝ → ℂ) := fun θ ↦ exp (I * (θ : ℝ))
-  let ruffle : ℝ → ℂ := fun t ↦ -Real.sin (4 * π * t) + I * 2 * Real.sin (2 * π * t)
+
 
   let unit_compact : IsCompact unit := isCompact_Icc
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
@@ -172,14 +192,15 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
   let K₃ := normA s₃ t₃
 
-  let B := fun s t ↦ (deriv (θ s) t) * (R ((θ s t) + π / 2)) * (ruffle t) --NOTICE H IS NOT INCLUDED IN THIS STATEMENT.
+  let B := fun s t ↦ (deriv (θ s) t) • (R ((θ s t) + π / 2) * ruffle t) --NOTICE H IS NOT INCLUDED IN THIS STATEMENT.
   let normB := fun s t ↦ ‖B s t‖
+
   have cont : Continuous (uncurry normB) := sorry
   rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
   let K₂ := normB s₂ t₂
 
-  let C := fun s t ↦ (R (θ s t)) * 2 * π * (deriv ruffle t) --NOTICE NEITHER H NOR N IS NOT INCLUDED IN THIS STATEMENT.
+  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (θ s t)) --NOTICE NEITHER H NOR N IS NOT INCLUDED IN THIS STATEMENT.
   let normC := fun s t ↦ ‖C s t‖
   have cont : Continuous (uncurry normB) := sorry
   rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
@@ -187,14 +208,13 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let K₁ := normC s₁ t₁
 
   have K₁_pos : K₁ > 0 := by
-    have justtobesure : K₁ = ‖(R (θ s₁ t₁)) * 2 * π * (deriv ruffle t₁)‖ := rfl
     sorry
 
   rcases (root_lemma_maybe K₁ K₂ K₃ K₁_pos H_pos) with ⟨N₀, hN₀⟩
 
   --Prove K₁ is positive and do the same for H (or set H = 1), get N₀, then N
 
-  let (γ : ℝ → ℝ → ℂ) := fun s t ↦ ϝ s t + (h s) * (R (θ s t)) * ruffle ((N₀+1) * t)
+  let γ : ℝ → ℝ → ℂ := fun s t ↦ ϝ s t + (h s) • (R (θ s t) * ruffle ((N₀+1) * t))
   use γ
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
@@ -229,7 +249,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   · constructor
     · intro t
       calc
-      γ 0 t = ϝ 0 t + (h 0) * (R (θ 0 t)) * ruffle ((N₀+1) * t) := sorry --dont know what to tell you... it is... B)
+      γ 0 t = ϝ 0 t + (h 0) • (R (θ 0 t)) * ruffle ((N₀+1) * t) := sorry --dont know what to tell you... it is... B)
       _ = ϝ 0 t + 0 * (R (θ 0 t)) * ruffle ((N₀+1) * t) := sorry --h 0 = 0
       _ = ϝ 0 t + 0 := sorry --you know how it is
       _ = ϝ 0 t := sorry --naturally
