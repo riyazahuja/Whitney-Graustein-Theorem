@@ -170,13 +170,15 @@ lemma duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin 
 lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
   rw[duh]
 
-
   intro opp
   rw [← norm_eq_zero] at opp
   rw [deriv_add] at opp
   rw [deriv.neg] at opp
   simp only [smul_eq_mul, deriv_mul_const_field', deriv_const_mul_field'] at opp
 
+  sorry
+  sorry
+  sorry
 
   /-TODO!!!!!! -/
 
@@ -336,28 +338,24 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       apply Continuous.add
       apply Continuous.neg
       apply Continuous.comp'
-      exact continuous_ofReal
-      apply Continuous.comp
-      exact continuous_re
-      apply Continuous.comp'
       exact Complex.continuous_sin
+      apply Continuous.comp
+      exact continuous_mul_left (4 * π : ℂ)
       apply Continuous.comp'
       exact continuous_ofReal
       apply Continuous.comp
-      exact continuous_mul_left (4 * π)
       exact continuous_snd
+      exact continuous_id'
 
       apply Continuous.smul
       apply Continuous.comp
-      exact continuous_mul_left (2)
-      apply Continuous.comp
-      exact continuous_re
+      exact continuous_mul_left 2
       apply Continuous.comp'
       exact Complex.continuous_sin
+      apply Continuous.comp
+      exact continuous_mul_left (2 * π : ℂ)
       apply Continuous.comp'
       exact continuous_ofReal
-      apply Continuous.comp
-      exact continuous_mul_left (2*π)
       exact continuous_snd
 
       exact continuous_const
