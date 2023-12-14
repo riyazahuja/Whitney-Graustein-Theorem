@@ -154,7 +154,7 @@ lemma h_mem : ∀ (x : ℝ), h x ∈ Icc 0 1 := sorry
 
 def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2 * π * t)⟩
 
-lemma duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
+lemma duh : ruffle = (fun x:ℝ ↦ -Real.sin (4 * π * x)+ (2 * Real.sin (2 * π * x))•I) := by
   ext x
   unfold ruffle
   dsimp
@@ -166,18 +166,45 @@ lemma duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin 
   rw [fact]
   simp
 
+lemma deriv_sin_local {f : ℝ → ℝ} {x : ℝ} (hc : DifferentiableAt ℝ f x) :
+    deriv (fun x => Real.sin (f x)) x = Real.cos (f x) * deriv f x :=
+  hc.hasDerivAt.sin.deriv
+
+lemma deriv_sin_local' (t : ℝ):
+    -deriv (fun (x:ℝ) ↦ (↑(Real.sin (4 * π * x)):ℂ)) t = -↑(Real.cos (4 * π * t) * deriv (fun x ↦ 4 * π * x) t):= by
+    refine ((fun {z w} ↦ Complex.ext_iff.mpr) ?_).symm
+
+
 lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
   rw[duh]
 
   intro opp
-  rw [← norm_eq_zero] at opp
+
   rw [deriv_add] at opp
   rw [deriv.neg] at opp
-  simp only [smul_eq_mul, deriv_mul_const_field', deriv_const_mul_field'] at opp
+  have := deriv_sin_local' t
+  rw [this] at opp
+  clear this
 
-  sorry
-  sorry
-  sorry
+  have : ∀ k:ℝ, (deriv (fun (x:ℝ) ↦ k * x) t ) = k * deriv (fun (x:ℝ) ↦ x) t:= by
+    intro k
+    apply deriv_const_mul
+    exact differentiableAt_id'
+  specialize this (4*π)
+  rw [this] at opp
+  clear this
+  simp only [deriv_id'', mul_one, real_smul, ofReal_sin,
+    deriv_mul_const_field', deriv_const_mul_field'] at opp
+  push_cast at opp
+  rw [deriv_const_mul] at opp
+
+
+
+
+
+
+
+
 
   /-TODO!!!!!! -/
 
@@ -447,6 +474,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       have periodic : Periodic (γ s) 1 := by sorry
       have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by sorry
       exact { diff := cdiff, per := periodic, deriv_ne := dγnon0 }
+
     exact { diff := dif, imm := im }
   --HtpyCircleImmersion (γ : ℝ → ℝ → ℂ)
     --requires diff : ContDiff ℝ ⊤ (uncurry γ)
