@@ -259,11 +259,36 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
       rw [corrolary]
 
-      simp only
+
+
+      have c1 : ∀s, Continuous (inter₃ s) := by
+        intro s
+        simp only
+        have fact1 : Continuous (fun t ↦ (1 - ρ s) • deriv γ₀ t) := by
+          have := CDγ₀.continuous
+          exact Continuous.const_smul this (1 - ρ s)
+        have fact2 : Continuous (fun t ↦ ρ s • deriv γ₁ t) := by
+          have := CDγ₁.continuous
+          exact Continuous.const_smul this (ρ s)
+        exact Continuous.add fact1 fact2
+      /-We now have that inter₃ : ℝ → C(ℝ; ℂ) -/
+
+      have c2 : Continuous inter₃ := by
+        simp only
+        sorry /-How to do this?-/
+        /-Now I want to show that inter₃ itself is continuous.-/
 
 
 
+      /-
+      With these two facts, we should be able to prove:
+      -/
+      have cmap : inter₃ ∈ C(ℝ, C(ℝ, ℂ)) := by
+        sorry
 
+      /-And then apply-/
+
+      exact ContinuousMap.continuous_uncurry_of_continuous cmap
 
 
     have fact2 := Continuous.norm fact1
