@@ -134,6 +134,10 @@ lemma in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C
     _ = ‖A + B + C‖ := congrArg Norm.norm (add_assoc A B C).symm
 
 
+def H : ℝ := 1
+
+lemma H_pos : 0 < H := Real.zero_lt_one
+
 def h : ℝ → ℝ := sorry
 
 lemma h_diff : ContDiff ℝ ⊤ h  := sorry
@@ -177,9 +181,6 @@ lemma ρ_mem : ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁):
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
-
-  let H : ℝ := 1
-  have H_pos : 0 < H := Real.zero_lt_one
 
   rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
   rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
@@ -248,14 +249,38 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       exact continuous_const
       exact continuous_const
 
-      have duh : (fun (x:ℝ×ℝ) ↦ ruffle x.2) = (fun x ↦ -Real.sin (4 * π * x.2)+ (2 * Real.sin (2 * π * x.2))•I) := by
+      have duh : (fun (x:ℝ×ℝ) ↦ ruffle x.2) = (fun x ↦ -Real.sin (4 * π * x.2)+ (2 * Real.sin (2 * π * x.2)) * I) := by
         ext x
         unfold ruffle
-        dsimp
+        /-
+        have fact (a : ℝ) : (↑a * I).re = 0 := sorry
+        have f (a : ℝ) : (-↑a : ℂ).re = -a := rfl
+        have ff'' (a : ℝ) : ↑a * I = (↑a : ℂ).im + (↑a : ℂ).re * I := self_eq_add_left.mpr rfl
+        have ff' (a : ℝ) : (↑a * I).re = ((↑a : ℂ).im + (↑a : ℂ).re * I).re := congrArg re (ff'' a)
+        have ff (a : ℝ) : (↑a * I).re = (↑a : ℂ).im + ((↑a : ℂ).re * I).re := ff' a
+        have ff''' (a : ℝ) : (↑a * I).re = (↑a : ℂ).im + ((↑a : ℂ).re * I).re := ff' a
+        congr
+        rw [f (Real.sin (4 * π * x.2)), fact (2 * (Real.sin (2 * π * x.2)))]
         simp
-        unfold ruffle
-        dsimp
-        simp
+        have f : -Complex.sin (4 * ↑π * ↑x.2) = -Real.sin (4 * π * x.2) := sorry
+        have ff : 2 * Complex.sin (2 * ↑π * ↑x.2) * I = ↑(2 * Real.sin (2 * π * x.2)) * I := by sorry
+        rw[f, ff]
+        congr
+
+        --have ff' (t : ℝ) : 4 * ↑π * ↑t = ↑(4 * π * t) := rfl
+        --have ff (t : ℝ) : (-Complex.sin ↑t).re = -Real.sin t := rfl
+        have fff' (t : ℝ) : (-Complex.sin (4 * ↑π * ↑t)).re = -Real.sin (4 * π * t) := by sorry
+        --have fff {t : ℝ} : (Complex.sin (↑t) * I).re = -(Complex.sin (↑t)).im := mul_I_re (Complex.sin ↑t)
+        have ffff {t : ℝ} : (2 * Complex.sin (2 * ↑π * ↑x.2) * I).re = 0 := by sorry
+
+          exact
+
+        have fffff {t : ℝ} : (-Complex.sin (4 * ↑π * ↑x.2)).im = 0 := by sorry
+        have ffffff {t : ℝ} : (2 * Complex.sin (2 * ↑π * ↑x.2) * I).im = 2 * Real.sin (2 * π * x.2) := by sorry
+        rw [fffff, zer0_add, ffffff]
+        exact
+        -/
+        sorry
       rw [duh]
       apply Continuous.add
       apply Continuous.neg
@@ -357,10 +382,8 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         --using root_lemma_maybe (or whatever it renamed to), get N₀ and define γ, carry out some triangle inequality argument showing that ∀ s, ‖deriv (γ s) t‖ > 0, and hence nonzero.
   · constructor
     · intro t
-      calc
-      γ 0 t = γ₀ t := simp [γ, ϝ]
+      simp [γ, ϝ]
     · intro t
-      calc
-      γ 1 t = γ₁ t := simp [γ, ϝ]
+      simp [γ, ϝ]
 
 end WhitneyGraustein
