@@ -15,7 +15,7 @@ noncomputable section
 structure CircleImmersion (γ : ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ γ
   per : Periodic γ 1
-  derive_ne : ∀ t, deriv γ t ≠ 0
+  deriv_ne : ∀ t, deriv γ t ≠ 0
 
 /- If extra time, prove existence of lift and convert axioms to defs/lemmas -/
 
@@ -45,7 +45,6 @@ noncomputable def CircleImmersion.turningNumber := (imm_γ.lift 1 - imm_γ.lift 
 structure HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ (uncurry γ)
   imm : ∀ s, CircleImmersion (γ s)
-
 
 /-
 ∀K₁, K₂, K₃ : ℝ, with K₁ > 0, and ∀H > 0, we claim that  there exists some N₀ such that N ≥ N₀
@@ -440,7 +439,15 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   use γ
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
-  · sorry
+  · have dif : ContDiff ℝ ⊤ (uncurry γ) := by
+      sorry
+    have im : ∀ s, CircleImmersion (γ s) := by
+      intro s
+      have cdiff : ContDiff ℝ ⊤ (γ s) := by sorry
+      have periodic : Periodic (γ s) 1 := by sorry
+      have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by sorry
+      exact { diff := cdiff, per := periodic, deriv_ne := dγnon0 }
+    exact { diff := dif, imm := im }
   --HtpyCircleImmersion (γ : ℝ → ℝ → ℂ)
     --requires diff : ContDiff ℝ ⊤ (uncurry γ)
       --should fall out of some composition stuff
