@@ -54,7 +54,7 @@ implies that K₁HN - K₂H - K₃ > 0
 This is required to construct our gamma function and for the main phase.
 -/
 
-lemma root_lemma_maybe (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
+lemma root_lemma_maybe {H:ℝ} (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
   /- Claim that N₀ = max (⌊(K₃ + K₂ * H) / (K₁ * H) + 1⌋) (0)
 
@@ -136,6 +136,8 @@ lemma in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C
 
 def h : ℝ → ℝ := sorry
 
+def H:ℝ := 1
+
 lemma h_diff : ContDiff ℝ ⊤ h  := sorry
 
 lemma h_main : ∀ᶠ (x : ℝ) in 𝓝ˢ main, h x = 0 := sorry
@@ -154,25 +156,17 @@ def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2
 lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
   have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
     ext x
-    unfold ruffle
-    dsimp
-    simp
-    rw [← Complex.sin_ofReal_re (4 * π * x)]
-    push_cast
-    simp
-    rw [← Complex.sin_ofReal_im (2 * π * x)]
-    push_cast
-    rfl
 
     unfold ruffle
     dsimp
+    have fact (y:ℂ) : y=y.re + y.im • I := by
+      simp
+    specialize fact (ruffle x)
+    unfold ruffle at fact
+    dsimp at fact
+    rw [fact]
     simp
-    rw [← Complex.sin_ofReal_re (2 * π * x)]
-    push_cast
-    simp
-    rw [← Complex.sin_ofReal_im (4 * π * x)]
-    push_cast
-    rfl
+
   rw[duh]
 
   intro opp
@@ -180,6 +174,9 @@ lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0
   rw [deriv_add] at opp
   rw [deriv.neg] at opp
   simp only [smul_eq_mul, deriv_mul_const_field', deriv_const_mul_field'] at opp
+  sorry
+  sorry
+  sorry
 
   /-TODO!!!!!! -/
 
@@ -197,25 +194,16 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
 
   have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
     ext x
-    unfold ruffle
-    dsimp
-    simp
-    rw [← Complex.sin_ofReal_re (4 * π * x)]
-    push_cast
-    simp
-    rw [← Complex.sin_ofReal_im (2 * π * x)]
-    push_cast
-    rfl
 
     unfold ruffle
     dsimp
+    have fact (y:ℂ) : y=y.re + y.im • I := by
+      simp
+    specialize fact (ruffle x)
+    unfold ruffle at fact
+    dsimp at fact
+    rw [fact]
     simp
-    rw [← Complex.sin_ofReal_re (2 * π * x)]
-    push_cast
-    simp
-    rw [← Complex.sin_ofReal_im (4 * π * x)]
-    push_cast
-    rfl
 
   rw [duh]
 
@@ -229,7 +217,33 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
   apply ContDiff.neg
   apply ContDiff.mul
   exact contDiff_const
-  sorry
+
+  {
+    sorry
+  }
+
+  exact contDiff_const
+  apply ContDiff.cexp
+  apply ContDiff.mul
+  apply ContDiff.mul
+  exact contDiff_const
+
+  {
+    sorry
+  }
+
+  exact contDiff_const
+  exact contDiff_const
+  exact contDiff_const
+
+  {
+    sorry
+  }
+
+
+
+
+
 
 
 
@@ -238,8 +252,6 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
 
 
 def R : ℝ → ℂ := fun θ ↦ cexp (θ • I)
-
-lemma R_diff : ContDiff ℝ ⊤ R := by sorry /-TODO!!!!!!!!!!!!!!-/
 
 -- See https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
 def ρ : ℝ → ℝ := sorry
