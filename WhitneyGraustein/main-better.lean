@@ -169,24 +169,26 @@ lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0
 
   rw[duh]
 
+
   intro opp
   rw [← norm_eq_zero] at opp
   rw [deriv_add] at opp
   rw [deriv.neg] at opp
   simp only [smul_eq_mul, deriv_mul_const_field', deriv_const_mul_field'] at opp
-  sorry
-  sorry
-  sorry
+
 
   /-TODO!!!!!! -/
 
 
 
-
-
-
-
-
+/-Credit: Alex J. Best-/
+lemma coer_diff : ContDiff ℝ ⊤ fun (x:ℝ) ↦ (x:ℂ) := by
+  refine IsBoundedLinearMap.contDiff ?hf
+  refine IsLinearMap.with_bound ?hf.hf 1 ?hf.h
+  refine { map_add := ?hf.hf.map_add, map_smul := ?hf.hf.map_smul }
+  simp
+  simp
+  simp
 
 
 
@@ -218,9 +220,7 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
   apply ContDiff.mul
   exact contDiff_const
 
-  {
-    sorry
-  }
+  exact coer_diff
 
   exact contDiff_const
   apply ContDiff.cexp
@@ -228,17 +228,22 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
   apply ContDiff.mul
   exact contDiff_const
 
-  {
-    sorry
-  }
+  exact coer_diff
 
   exact contDiff_const
   exact contDiff_const
   exact contDiff_const
+  /-credit for this last part: Ruben Van de Velde-/
+  simp only [smul_eq_mul]
+  apply ContDiff.mul ?_ contDiff_const
+  apply ContDiff.mul contDiff_const ?_
+  simp_rw [← Complex.ofReal_ofNat, ← Complex.ofReal_mul, ←Complex.ofReal_sin]
+  apply coer_diff.comp
+  apply ContDiff.sin
+  apply ContDiff.mul contDiff_const ?_
+  apply contDiff_id
 
-  {
-    sorry
-  }
+
 
 
 
