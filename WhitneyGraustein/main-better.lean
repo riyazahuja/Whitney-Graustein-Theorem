@@ -54,7 +54,7 @@ implies that K₁HN - K₂H - K₃ > 0
 This is required to construct our gamma function and for the main phase.
 -/
 
-lemma root_lemma_maybe (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
+lemma root_lemma_maybe {H:ℝ} (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
   /- Claim that N₀ = max (⌊(K₃ + K₂ * H) / (K₁ * H) + 1⌋) (0)
 
@@ -140,6 +140,8 @@ lemma H_pos : 0 < H := Real.zero_lt_one
 
 def h : ℝ → ℝ := sorry
 
+def H:ℝ := 1
+
 lemma h_diff : ContDiff ℝ ⊤ h  := sorry
 
 lemma h_main : ∀ᶠ (x : ℝ) in 𝓝ˢ main, h x = 0 := sorry
@@ -155,12 +157,105 @@ lemma h_mem : ∀ (x : ℝ), h x ∈ Icc 0 1 := sorry
 
 def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2 * π * t)⟩
 
-lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by sorry /-TODO!!!!!!!!!!!!!!!-/
+lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
+  have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
+    ext x
+
+    unfold ruffle
+    dsimp
+    have fact (y:ℂ) : y=y.re + y.im • I := by
+      simp
+    specialize fact (ruffle x)
+    unfold ruffle at fact
+    dsimp at fact
+    rw [fact]
+    simp
+
+  rw[duh]
+
+  intro opp
+  rw [← norm_eq_zero] at opp
+  rw [deriv_add] at opp
+  rw [deriv.neg] at opp
+  simp only [smul_eq_mul, deriv_mul_const_field', deriv_const_mul_field'] at opp
+  sorry
+  sorry
+  sorry
+
+  /-TODO!!!!!! -/
+
+
+
+
+
+
+
+
+
+
+
+lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
+
+  have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
+    ext x
+
+    unfold ruffle
+    dsimp
+    have fact (y:ℂ) : y=y.re + y.im • I := by
+      simp
+    specialize fact (ruffle x)
+    unfold ruffle at fact
+    dsimp at fact
+    rw [fact]
+    simp
+
+  rw [duh]
+
+  apply ContDiff.add
+  apply ContDiff.neg
+  apply ContDiff.mul
+  apply ContDiff.mul
+  apply ContDiff.sub
+  apply ContDiff.cexp
+  apply ContDiff.mul
+  apply ContDiff.neg
+  apply ContDiff.mul
+  exact contDiff_const
+
+  {
+    sorry
+  }
+
+  exact contDiff_const
+  apply ContDiff.cexp
+  apply ContDiff.mul
+  apply ContDiff.mul
+  exact contDiff_const
+
+  {
+    sorry
+  }
+
+  exact contDiff_const
+  exact contDiff_const
+  exact contDiff_const
+
+  {
+    sorry
+  }
+
+
+
+
+
+
+
+
+  /-FINISH!!!!!!!!!-/
+
 
 
 def R : ℝ → ℂ := fun θ ↦ cexp (θ • I)
-
-lemma R_diff : ContDiff ℝ ⊤ R := by sorry /-TODO!!!!!!!!!!!!!!-/
 
 -- See https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
 def ρ : ℝ → ℝ := sorry
@@ -348,7 +443,40 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let K₁ := normC s₁ t₁
 
   have K₁_pos : K₁ > 0 := by
-    sorry
+    by_contra opp
+    push_neg at opp
+    simp only at opp
+    have := norm_nonneg ((2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)))
+    have opp': ‖(2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))‖ = 0 := by exact LE.le.antisymm opp this
+    clear opp this
+
+    rw [norm_smul (2*π) (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))] at opp'
+    apply mul_eq_zero.1 at opp'
+    rcases opp' with A|opp
+    simp at A
+    have : π ≠ 0 := by
+      exact pi_ne_zero
+    exact this A
+
+    rw [norm_mul (deriv ruffle t₁) (R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))] at opp
+    apply mul_eq_zero.1 at opp
+    rcases opp with B|C
+
+    have := ruffle_deriv_neq_zero_on_unit t₁in
+    have : ‖deriv ruffle t₁‖ ≠ 0 := by
+      exact norm_ne_zero_iff.mpr this
+    exact this B
+
+    unfold R at C
+    have : ∀ t:ℝ, t*I = t• I:= by
+      intro t
+      simp
+    specialize this ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)
+    have final := Complex.norm_exp_ofReal_mul_I ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)
+    rw [this] at final
+    rw [final] at C
+    linarith
+
 
   rcases (root_lemma_maybe K₁ K₂ K₃ K₁_pos H_pos) with ⟨N₀, hN₀⟩
 
