@@ -1,5 +1,5 @@
 import Mathlib
-import calculus
+import WhitneyGraustein.calculus
 
 
 open Set Function Complex Real Order
@@ -194,31 +194,19 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let normA := fun s t ↦ ‖A s t‖
 
 
+  have ϝ_diff : ContDiff ℝ ⊤ (uncurry ϝ) := by
+    apply ContDiff.add
+    apply ContDiff.smul
+    apply ContDiff.sub
+    exact contDiff_const
+    exact ρ_diff.comp contDiff_fst
+    exact imm_γ₀.diff.comp contDiff_snd
+    apply ContDiff.smul
+    exact ρ_diff.comp contDiff_fst
+    exact imm_γ₁.diff.comp contDiff_snd
+
   have cont : Continuous (uncurry normA) := by
-
-    have ϝ_diff : ContDiff ℝ ⊤ (uncurry ϝ) := by
-      apply ContDiff.add
-      apply ContDiff.smul
-      apply ContDiff.sub
-      exact contDiff_const
-      exact ρ_diff.comp contDiff_fst
-      exact imm_γ₀.diff.comp contDiff_snd
-      apply ContDiff.smul
-      exact ρ_diff.comp contDiff_fst
-      exact imm_γ₁.diff.comp contDiff_snd
-
-    have := ContDiff.continuous_partial_snd (ϝ_diff) (OrderTop.le_top (1:ℕ∞))
-    have final := Continuous.norm this
-
-    exact final
-
-
-
-
-
-
-
-
+    exact (ContDiff.continuous_partial_snd (ϝ_diff) (OrderTop.le_top (1:ℕ∞))).norm
 
 
   rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
