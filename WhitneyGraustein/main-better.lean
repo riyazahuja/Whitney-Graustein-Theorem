@@ -145,7 +145,12 @@ lemma h_mem : ∀ (x : ℝ), h x ∈ Icc 0 1 := sorry
 
 def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2 * π * t)⟩
 
+lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by sorry /-TODO!!!!!!!!!!!!!!!-/
+
+
 def R : ℝ → ℂ := fun θ ↦ cexp (θ • I)
+
+lemma R_diff : ContDiff ℝ ⊤ R := by sorry /-TODO!!!!!!!!!!!!!!-/
 
 -- See https://github.com/leanprover-community/sphere-eversion/blob/master/SphereEversion/ToMathlib/Analysis/CutOff.lean
 def ρ : ℝ → ℝ := sorry
@@ -216,14 +221,100 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let B := fun s t ↦ (deriv (θ s) t) • (R ((θ s t) + π / 2) * ruffle t) --NOTICE H IS NOT INCLUDED IN THIS STATEMENT.
   let normB := fun s t ↦ ‖B s t‖
 
-  have cont : Continuous (uncurry normB) := sorry
+  have θ_diff : ContDiff ℝ ⊤ (uncurry θ) := by
+    apply ContDiff.add
+    apply ContDiff.smul
+    apply ContDiff.sub
+    exact contDiff_const
+    exact ρ_diff.comp contDiff_fst
+    exact hθ₀_diff.comp contDiff_snd
+    apply ContDiff.smul
+    exact ρ_diff.comp contDiff_fst
+    exact hθ₁_diff.comp contDiff_snd
+
+
+  have cont : Continuous (uncurry normB) := by
+    have c1 := (ContDiff.continuous_partial_snd (θ_diff) (OrderTop.le_top (1:ℕ∞)))
+    have c2 : Continuous (fun (x:(ℝ×ℝ)) ↦ R ((θ x.1 x.2) + π / 2) * ruffle x.2) := by
+      apply Continuous.mul
+      apply Continuous.comp
+      exact Complex.continuous_exp
+      apply Continuous.smul
+      apply Continuous.add
+      exact ContDiff.continuous θ_diff
+      exact continuous_const
+      exact continuous_const
+
+      have duh : (fun (x:ℝ×ℝ) ↦ ruffle x.2) = (fun x ↦ -Real.sin (4 * π * x.2)+ (2 * Real.sin (2 * π * x.2))•I) := by
+        ext x
+        unfold ruffle
+        dsimp
+        simp
+        unfold ruffle
+        dsimp
+        simp
+      rw [duh]
+      apply Continuous.add
+      apply Continuous.neg
+      apply Continuous.comp'
+      exact continuous_ofReal
+      apply Continuous.comp
+      exact continuous_re
+      apply Continuous.comp'
+      exact Complex.continuous_sin
+      apply Continuous.comp'
+      exact continuous_ofReal
+      apply Continuous.comp
+      exact continuous_mul_left (4 * π)
+      exact continuous_snd
+
+      apply Continuous.smul
+      apply Continuous.comp
+      exact continuous_mul_left (2)
+      apply Continuous.comp
+      exact continuous_re
+      apply Continuous.comp'
+      exact Complex.continuous_sin
+      apply Continuous.comp'
+      exact continuous_ofReal
+      apply Continuous.comp
+      exact continuous_mul_left (2*π)
+      exact continuous_snd
+
+      exact continuous_const
+
+    exact (Continuous.smul c1 c2).norm
+
+
+
   rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
   let K₂ := normB s₂ t₂
 
   let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (θ s t)) --NOTICE NEITHER H NOR N IS NOT INCLUDED IN THIS STATEMENT.
   let normC := fun s t ↦ ‖C s t‖
-  have cont : Continuous (uncurry normB) := sorry
+
+  have cont : Continuous (uncurry normC) := by
+    have c1 := ((contDiff_top_iff_deriv.1 (ruffle_diff)).2).continuous
+
+    have c2 : Continuous (uncurry θ) := θ_diff.continuous
+
+    have c3 : Continuous (fun (x:(ℝ×ℝ)) ↦ (2 * π) • (deriv ruffle x.2 * R (θ x.1 x.2))) := by
+      apply Continuous.smul
+      exact continuous_const
+      apply Continuous.mul
+      apply Continuous.comp'
+      exact c1
+      exact continuous_snd
+      apply Continuous.comp
+      exact Complex.continuous_exp
+      apply Continuous.smul
+      exact c2
+      exact continuous_const
+
+    exact c3.norm
+
+
   rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
   let K₁ := normC s₁ t₁
