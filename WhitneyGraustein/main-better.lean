@@ -1,10 +1,15 @@
 import Mathlib
+import WhitneyGraustein.calculus
+
 
 open Set Function Complex Real Order
 
 open Topology NormedSpace
 
 open Mathlib
+
+
+
 noncomputable section
 
 structure CircleImmersion (γ : ℝ → ℂ) : Prop where
@@ -189,118 +194,19 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let normA := fun s t ↦ ‖A s t‖
 
 
+  have ϝ_diff : ContDiff ℝ ⊤ (uncurry ϝ) := by
+    apply ContDiff.add
+    apply ContDiff.smul
+    apply ContDiff.sub
+    exact contDiff_const
+    exact ρ_diff.comp contDiff_fst
+    exact imm_γ₀.diff.comp contDiff_snd
+    apply ContDiff.smul
+    exact ρ_diff.comp contDiff_fst
+    exact imm_γ₁.diff.comp contDiff_snd
+
   have cont : Continuous (uncurry normA) := by
-
-    have fact1 : Continuous (uncurry (fun s t ↦ deriv (ϝ s) t)) := by
-
-
-      have CDγ₀ := (contDiff_top_iff_deriv.1 (imm_γ₀.diff)).2
-      have CDγ₁ := (contDiff_top_iff_deriv.1 (imm_γ₁.diff)).2
-
-      have CDρ := (contDiff_top_iff_deriv.1 (ρ_diff)).2
-
-
-
-      let inter₃ := fun s t ↦  (1 - (ρ s)) • (deriv γ₀ t) + (ρ s) • deriv γ₁ t
-      have exact_derivative : ∀ s, inter₃ s = deriv (ϝ s) := by
-        intro s
-        have diff_γ₀:= imm_γ₀.diff.differentiable (OrderTop.le_top (1:ℕ∞))
-        have diff_γ₁:= imm_γ₁.diff.differentiable (OrderTop.le_top (1:ℕ∞))
-
-        simp only
-        have duh : ∀x, deriv (fun t ↦ (1 - ↑(ρ s)) • γ₀ t + ↑(ρ s) • γ₁ t) x = deriv (fun t ↦ (1 - ↑(ρ s)) • γ₀ t) x + deriv (fun t ↦ ↑(ρ s) • γ₁ t) x := by
-          intro x
-
-          have f1 : DifferentiableAt ℝ (fun t ↦ (1 - ↑(ρ s)) • γ₀ t) x := by
-
-            have diff_final : Differentiable ℝ (fun t ↦ (1 - ↑(ρ s)) • γ₀ t) := by
-              exact Differentiable.const_smul diff_γ₀ (1 - ↑(ρ s))
-
-            exact diff_final x
-
-          have f2 : DifferentiableAt ℝ (fun t ↦ ↑(ρ s) • γ₁ t) x := by
-
-            have diff_final : Differentiable ℝ (fun t ↦ ↑(ρ s) • γ₁ t) := by
-              exact Differentiable.const_smul diff_γ₁ ↑(ρ s)
-
-            exact diff_final x
-
-          exact deriv_add f1 f2
-
-        have duh2 := funext duh
-
-
-
-        have p1 : ∀ x, deriv (fun t ↦ (1 - ↑(ρ s)) • γ₀ t) x=  (fun t ↦ (1 - ↑(ρ s)) • deriv γ₀ t) x := by
-          intro x
-          exact deriv_const_smul (1 - ↑(ρ s)) (diff_γ₀ x)
-
-
-        have p2 : ∀ x, deriv (fun t ↦ ↑(ρ s) • γ₁ t) x=  (fun t ↦ ↑(ρ s) • deriv γ₁ t) x := by
-          intro x
-          exact deriv_const_smul (↑(ρ s)) (diff_γ₁ x)
-
-
-        have rewrite : ∀ (x : ℝ), deriv (fun t ↦ (1 - ↑(ρ s)) • γ₀ t) x + deriv (fun t ↦ ↑(ρ s) • γ₁ t) x = (fun t ↦ (1 - ↑(ρ s)) • deriv γ₀ t) x + (fun t ↦ ↑(ρ s) • deriv γ₁ t) x := by
-          intro x
-          rw[p1]
-          rw[p2]
-        clear duh p1 p2
-
-        have rewrite2 := funext rewrite
-        clear rewrite
-        rw [rewrite2] at duh2
-        clear rewrite2
-        exact id duh2.symm
-
-      have corrolary : (fun s t ↦ deriv (ϝ s) t) = (fun s t ↦ inter₃ s t) := by
-        ext s t
-        exact eq_comm.mp (congrArg re (congrFun (exact_derivative s) t))
-
-      rw [corrolary]
-
-
-
-      have c1 : ∀s, Continuous (inter₃ s) := by
-        intro s
-        simp only
-        have fact1 : Continuous (fun t ↦ (1 - ρ s) • deriv γ₀ t) := by
-          have := CDγ₀.continuous
-          exact Continuous.const_smul this (1 - ρ s)
-        have fact2 : Continuous (fun t ↦ ρ s • deriv γ₁ t) := by
-          have := CDγ₁.continuous
-          exact Continuous.const_smul this (ρ s)
-        exact Continuous.add fact1 fact2
-      /-We now have that inter₃ : ℝ → C(ℝ; ℂ) -/
-
-      have c2 : Continuous inter₃ := by
-        simp only
-        sorry /-How to do this?-/
-        /-Now I want to show that inter₃ itself is continuous.-/
-
-
-
-      /-
-      With these two facts, we should be able to prove:
-      -/
-      have cmap : inter₃ ∈ C(ℝ, C(ℝ, ℂ)) := by
-        sorry
-
-      /-And then apply-/
-
-      exact ContinuousMap.continuous_uncurry_of_continuous cmap
-
-
-    have fact2 := Continuous.norm fact1
-    have fact3 : (fun x ↦ ‖uncurry (fun s t ↦ deriv (ϝ s) t) x‖) = uncurry normA := by
-      simp only
-      exact rfl
-
-    rw [← fact3]
-    exact fact2
-
-
-
+    exact (ContDiff.continuous_partial_snd (ϝ_diff) (OrderTop.le_top (1:ℕ∞))).norm
 
 
   rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
