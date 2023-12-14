@@ -134,9 +134,11 @@ lemma in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C
     _ = ‖A + B + C‖ := congrArg Norm.norm (add_assoc A B C).symm
 
 
-def h : ℝ → ℝ := sorry
+def H : ℝ := 1
 
-def H:ℝ := 1
+lemma H_pos : 0 < H := Real.zero_lt_one
+
+def h : ℝ → ℝ := sorry
 
 lemma h_diff : ContDiff ℝ ⊤ h  := sorry
 
@@ -153,20 +155,19 @@ lemma h_mem : ∀ (x : ℝ), h x ∈ Icc 0 1 := sorry
 
 def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2 * π * t)⟩
 
-lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
-  have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
-    ext x
-
-    unfold ruffle
-    dsimp
-    have fact (y:ℂ) : y=y.re + y.im • I := by
-      simp
-    specialize fact (ruffle x)
-    unfold ruffle at fact
-    dsimp at fact
-    rw [fact]
+lemma duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
+  ext x
+  unfold ruffle
+  dsimp
+  have fact (y:ℂ) : y=y.re + y.im • I := by
     simp
+  specialize fact (ruffle x)
+  unfold ruffle at fact
+  dsimp at fact
+  rw [fact]
+  simp
 
+lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
   rw[duh]
 
 
@@ -193,20 +194,6 @@ lemma coer_diff : ContDiff ℝ ⊤ fun (x:ℝ) ↦ (x:ℂ) := by
 
 
 lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
-
-  have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
-    ext x
-
-    unfold ruffle
-    dsimp
-    have fact (y:ℂ) : y=y.re + y.im • I := by
-      simp
-    specialize fact (ruffle x)
-    unfold ruffle at fact
-    dsimp at fact
-    rw [fact]
-    simp
-
   rw [duh]
 
   apply ContDiff.add
@@ -278,9 +265,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
 
-  let H : ℝ := 1
-  have H_pos : 0 < H := Real.zero_lt_one
-
   rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
   rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
 
@@ -348,14 +332,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       exact continuous_const
       exact continuous_const
 
-      have duh : (fun (x:ℝ×ℝ) ↦ ruffle x.2) = (fun x ↦ -Real.sin (4 * π * x.2)+ (2 * Real.sin (2 * π * x.2))•I) := by
-        ext x
-        unfold ruffle
-        dsimp
-        simp
-        unfold ruffle
-        dsimp
-        simp
       rw [duh]
       apply Continuous.add
       apply Continuous.neg
@@ -490,10 +466,8 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         --using root_lemma_maybe (or whatever it renamed to), get N₀ and define γ, carry out some triangle inequality argument showing that ∀ s, ‖deriv (γ s) t‖ > 0, and hence nonzero.
   · constructor
     · intro t
-      calc
-      γ 0 t = γ₀ t := simp [γ, ϝ]
+      simp [γ, ϝ]
     · intro t
-      calc
-      γ 1 t = γ₁ t := simp [γ, ϝ]
+      simp [γ, ϝ]
 
 end WhitneyGraustein
