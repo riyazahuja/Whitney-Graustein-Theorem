@@ -133,6 +133,7 @@ lemma in_particular {A B C : ℂ} : ‖C‖ - ‖B‖ - ‖A‖ ≤ ‖A + B + C
     _ ≤ ‖A + (B + C)‖ := triangle
     _ = ‖A + B + C‖ := congrArg Norm.norm (add_assoc A B C).symm
 
+
 def h : ℝ → ℝ := sorry
 
 lemma h_diff : ContDiff ℝ ⊤ h  := sorry
@@ -142,6 +143,11 @@ lemma h_main : ∀ᶠ (x : ℝ) in 𝓝ˢ main, h x = 0 := sorry
 lemma h_antimain : ∀ᶠ (x : ℝ) in 𝓝ˢ antimain, h x = H := sorry
 
 lemma h_mem : ∀ (x : ℝ), h x ∈ Icc 0 1 := sorry
+
+@[simp] lemma h_zero : h 0 = 0 := sorry
+
+@[simp] lemma h_one : h 1 = 0 := sorry
+
 
 def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2 * π * t)⟩
 
@@ -246,12 +252,14 @@ lemma ρ_unruffling : EqOn ρ 1 unruffling := sorry
 
 lemma ρ_mem : ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry
 
+@[simp] lemma rho_zero : ρ 0 = 0 := sorry
+
+@[simp] lemma rho_one : ρ 1 = 1 := sorry
+
 
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁):
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
-  -- get that unit is closed, and two disjoint closed subintervals "ruffling" and "unruffling"
-  --have dfact (x : ℝ) : deriv (fun (x : ℝ) ↦ (x ^ 2)) = fun x ↦ 2 * x := by simp
 
   let H : ℝ := 1
   have H_pos : 0 < H := Real.zero_lt_one
@@ -262,13 +270,8 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   have fact {A : ℂ} : 0 = A + (-A) := by norm_num
 
   -- have critical : ∀ K₁ > 0, ∀ H > 0, ∀ N > N₀, ∀ s, ∀ t, ‖deriv (γ s) t‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
-    --when we get to this part, we will need ‖A + B‖ ≥ ‖A‖ - ‖B‖; this comes from the triangle inequality: ‖A‖ + ‖B‖ ≥ ‖A + B‖ (defined for normed groups as norm_mul_le')
-      --‖A + B‖ + ‖B‖ = ‖A + B‖ + ‖-B‖ ≥ ‖(A + B) + (-B)‖ = ‖A‖, so ‖A + B‖ + ‖B‖ ≥ ‖A‖, so ‖A + B‖ ≥ ‖A‖ + ‖B‖
-    --from this, ‖A + B + C‖ ≥ ‖A‖ - ‖B‖ - ‖C‖ (or some rearrangement thereof)
   -- fix γ₀, γ₁, and ρ
   -- ∀ H > 0, ∃ N₀, ∀ N ≥ N₀, K₁ * N * H - K₂ * H - K₃ > 0
-  -- need that ∀ s, γ s is an immersed circle (of t) (and of course, γ 0 = γ₀ and same for 1)
-  -- the extreme value theorem on (1-ρ(s)) * γ₀(t) + ρ(s) * γ₁(t) provides some maximum independent of N and H that we call K₃
 
   let ϝ  := fun s t ↦ (1 - (ρ s)) • (γ₀ t) + (ρ s) • γ₁ t
   let θ  := fun s t ↦ (1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t)
@@ -374,7 +377,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
   let K₂ := normB s₂ t₂
 
-  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (θ s t)) --NOTICE NEITHER H NOR N IS NOT INCLUDED IN THIS STATEMENT.
+  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (θ s t)) --NOTICE NEITHER H NOR N IS INCLUDED IN THIS STATEMENT.
   let normC := fun s t ↦ ‖C s t‖
 
   have cont : Continuous (uncurry normC) := by
@@ -461,12 +464,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
           --       = ...
       --requires derive_ne : ∀ t, deriv γ t ≠ 0
         --big thing here
-        --do we need a lemma (hopefully something similar in mathlib or otherwise eliminative of the issue of separating into "phases"):
-          --for all a c : ℝ for all γ ContDiff on [a, c], for all b with a < b < c, if deriv γ t ≠ 0 on (a, b) and deriv γ t ≠ 0 on (b, c) and deriv γ b ≠ 0, then deriv γ t ≠ 0 on (a, b)
-            --or some other lemma that relates extrema on two intervals to extrema on their union (or otherwise to that effect)
-          --NOTE that the deriv γ b condition can be substituted for being monotonic on some neighborhood of b,
-            --which if we take for granted, could make handling the cutoff nice if we just assert it is entirely nondecreasing (or maybe im tripping)
-        --do we want to prove this with explicit values for the given R and ruffle (and h and ρ) (anything else?) first or do we want to prove the more general statements of their existence
         --for a given s, K₁ = min of the norm of the thing with h and N in it
           --exists cuz norm has clear lower bound 0, show that this in particular is nonzero because the terms are nonnegative and are never simultaneously zero
         --for a given s, K₂ = max(‖h * deriv (θ s) * R * ruffle‖) on s, t ∈ [0, 1]
@@ -477,28 +474,9 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   · constructor
     · intro t
       calc
-      γ 0 t = ϝ 0 t + (h 0) • (R (θ 0 t)) * ruffle ((N₀+1) * t) := sorry --dont know what to tell you... it is... B)
-      _ = ϝ 0 t + 0 * (R (θ 0 t)) * ruffle ((N₀+1) * t) := sorry --h 0 = 0
-      _ = ϝ 0 t + 0 := sorry --you know how it is
-      _ = ϝ 0 t := sorry --naturally
-      _ = (1 - (ρ 0)) * (γ₀ t) + (ρ 0) * γ₁ t := sorry --dont know what to tell you... it is... B)
-      _ = (1 - 0) * (γ₀ t) + 0 * γ₁ t := sorry
-      _ = 1 * (γ₀ t) + 0 := sorry
-      _ = (γ₀ t) + 0 := sorry
-      _ = γ₀ t := sorry
+      γ 0 t = γ₀ t := simp [γ, ϝ]
     · intro t
       calc
-      γ 1 t = ϝ 1 t + (h 1) * (R (θ 1 t)) * ruffle ((N₀+1) * t) := sorry --dont know what to tell you... it is... B)
-      _ = ϝ 1 t + 0 * (R (θ 1 t)) * ruffle ((N₀+1) * t) := sorry --h 0 = 0
-      _ = ϝ 1 t + 0 := sorry --you know how it is
-      _ = ϝ 1 t := sorry --naturally
-      _ = (1 - (ρ 1)) * (γ₀ t) + (ρ 1) * γ₁ t := sorry --dont know what to tell you... it is... B)
-      _ = (1 - 1) * (γ₀ t) + 1 * γ₁ t := sorry
-      _ = 0 * (γ₀ t) + 1 * γ₁ t := sorry
-      _ = 0 + 1 * γ₁ t := sorry
-      _ = 1 * γ₁ t := sorry
-      _ = γ₁ t := sorry
-
---Maybe of note: exp (I * h.lift t) is a local homeomorphism
+      γ 1 t = γ₁ t := simp [γ, ϝ]
 
 end WhitneyGraustein
