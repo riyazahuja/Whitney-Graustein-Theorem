@@ -140,8 +140,6 @@ lemma H_pos : 0 < H := Real.zero_lt_one
 
 def h : ℝ → ℝ := sorry
 
-def H:ℝ := 1
-
 lemma h_diff : ContDiff ℝ ⊤ h  := sorry
 
 lemma h_main : ∀ᶠ (x : ℝ) in 𝓝ˢ main, h x = 0 := sorry
@@ -157,20 +155,19 @@ lemma h_mem : ∀ (x : ℝ), h x ∈ Icc 0 1 := sorry
 
 def ruffle : ℝ → ℂ := fun t ↦ ⟨-Real.sin (4 * π * t), 2 * Real.sin (2 * π * t)⟩
 
-lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
-  have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
-    ext x
-
-    unfold ruffle
-    dsimp
-    have fact (y:ℂ) : y=y.re + y.im • I := by
-      simp
-    specialize fact (ruffle x)
-    unfold ruffle at fact
-    dsimp at fact
-    rw [fact]
+lemma duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
+  ext x
+  unfold ruffle
+  dsimp
+  have fact (y:ℂ) : y=y.re + y.im • I := by
     simp
+  specialize fact (ruffle x)
+  unfold ruffle at fact
+  dsimp at fact
+  rw [fact]
+  simp
 
+lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
   rw[duh]
 
   intro opp
@@ -185,30 +182,7 @@ lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0
   /-TODO!!!!!! -/
 
 
-
-
-
-
-
-
-
-
-
 lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
-
-  have duh : ruffle = (fun x:ℝ ↦ -Complex.sin (4 * π * x)+ (2 * Complex.sin (2 * π * x))•I) := by
-    ext x
-
-    unfold ruffle
-    dsimp
-    have fact (y:ℂ) : y=y.re + y.im • I := by
-      simp
-    specialize fact (ruffle x)
-    unfold ruffle at fact
-    dsimp at fact
-    rw [fact]
-    simp
-
   rw [duh]
 
   apply ContDiff.add
@@ -344,38 +318,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       exact continuous_const
       exact continuous_const
 
-      have duh : (fun (x:ℝ×ℝ) ↦ ruffle x.2) = (fun x ↦ -Real.sin (4 * π * x.2)+ (2 * Real.sin (2 * π * x.2)) * I) := by
-        ext x
-        unfold ruffle
-        /-
-        have fact (a : ℝ) : (↑a * I).re = 0 := sorry
-        have f (a : ℝ) : (-↑a : ℂ).re = -a := rfl
-        have ff'' (a : ℝ) : ↑a * I = (↑a : ℂ).im + (↑a : ℂ).re * I := self_eq_add_left.mpr rfl
-        have ff' (a : ℝ) : (↑a * I).re = ((↑a : ℂ).im + (↑a : ℂ).re * I).re := congrArg re (ff'' a)
-        have ff (a : ℝ) : (↑a * I).re = (↑a : ℂ).im + ((↑a : ℂ).re * I).re := ff' a
-        have ff''' (a : ℝ) : (↑a * I).re = (↑a : ℂ).im + ((↑a : ℂ).re * I).re := ff' a
-        congr
-        rw [f (Real.sin (4 * π * x.2)), fact (2 * (Real.sin (2 * π * x.2)))]
-        simp
-        have f : -Complex.sin (4 * ↑π * ↑x.2) = -Real.sin (4 * π * x.2) := sorry
-        have ff : 2 * Complex.sin (2 * ↑π * ↑x.2) * I = ↑(2 * Real.sin (2 * π * x.2)) * I := by sorry
-        rw[f, ff]
-        congr
-
-        --have ff' (t : ℝ) : 4 * ↑π * ↑t = ↑(4 * π * t) := rfl
-        --have ff (t : ℝ) : (-Complex.sin ↑t).re = -Real.sin t := rfl
-        have fff' (t : ℝ) : (-Complex.sin (4 * ↑π * ↑t)).re = -Real.sin (4 * π * t) := by sorry
-        --have fff {t : ℝ} : (Complex.sin (↑t) * I).re = -(Complex.sin (↑t)).im := mul_I_re (Complex.sin ↑t)
-        have ffff {t : ℝ} : (2 * Complex.sin (2 * ↑π * ↑x.2) * I).re = 0 := by sorry
-
-          exact
-
-        have fffff {t : ℝ} : (-Complex.sin (4 * ↑π * ↑x.2)).im = 0 := by sorry
-        have ffffff {t : ℝ} : (2 * Complex.sin (2 * ↑π * ↑x.2) * I).im = 2 * Real.sin (2 * π * x.2) := by sorry
-        rw [fffff, zer0_add, ffffff]
-        exact
-        -/
-        sorry
       rw [duh]
       apply Continuous.add
       apply Continuous.neg
