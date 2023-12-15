@@ -27,9 +27,9 @@ structure CircleImmersion.lift (θ : ℝ → ℝ) : Prop where
 -/
 
 def CircleImmersion.lift {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) : ℝ → ℝ := sorry
-
+/-MAKE SURE THE PERIODIC SHOULD BE DEFINED AND NOT PROVEN-/
 lemma lift_exists {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) :
-  ∃ θ : ℝ → ℝ, (θ = CircleImmersion.lift imm_γ) ∧ (ContDiff ℝ ⊤ θ) ∧ (∀ (t : ℝ), (deriv γ t = ‖deriv γ t‖ * exp (I * θ t))) := sorry
+  ∃ θ : ℝ → ℝ, (θ = CircleImmersion.lift imm_γ) ∧ (ContDiff ℝ ⊤ θ) ∧ (∀ (t : ℝ), (deriv γ t = ‖deriv γ t‖ * exp (I * θ t))) ∧ (Periodic θ 1) := sorry
 
 -- Lift unique?
 
@@ -39,6 +39,8 @@ variable {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ)
 axiom CircleImmersion.contDiff_lift : ContDiff ℝ ⊤ imm_γ.lift
 
 axiom CircleImmersion.deriv_eq (t : ℝ) : deriv γ t = ‖deriv γ t‖ * Complex.exp (I * imm_γ.lift t)
+
+
 
 noncomputable def CircleImmersion.turningNumber := (imm_γ.lift 1 - imm_γ.lift 0) / (2 * π)
 
@@ -197,6 +199,7 @@ lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0
     deriv_mul_const_field', deriv_const_mul_field'] at opp
   push_cast at opp
   rw [deriv_const_mul] at opp
+  sorry
 
 
 
@@ -293,8 +296,8 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
 
-  rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
-  rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
+  rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp, hθ₀_per⟩
+  rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp, hθ₁_per⟩
 
   have fact {A : ℂ} : 0 = A + (-A) := by norm_num
 
@@ -467,11 +470,168 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
   · have dif : ContDiff ℝ ⊤ (uncurry γ) := by
-      sorry
+      have sufficient : ContDiff ℝ ⊤ (fun (x:ℝ × ℝ ) ↦ ϝ x.1 x.2 + (h x.1) • (R (θ x.1 x.2) * ruffle ((N₀+1) * x.2))) := by
+        apply ContDiff.add
+        exact ϝ_diff
+        apply ContDiff.smul
+        have := h_diff
+        exact ContDiff.fst' this
+        apply ContDiff.mul
+        apply ContDiff.comp
+        exact Complex.contDiff_exp
+        apply ContDiff.smul
+        exact θ_diff
+        exact contDiff_const
+        have : ContDiff ℝ ⊤ ( fun (x:ℝ× ℝ) ↦ (↑N₀ + 1) * x.2 ) := by
+          apply ContDiff.snd'
+          apply ContDiff.mul
+          exact contDiff_const
+          exact contDiff_id
+
+        have this2 := ruffle_diff
+        have fin := ContDiff.comp this2 this
+        have duh : (ruffle ∘ fun (x:ℝ× ℝ) ↦ (↑N₀ + 1) * x.2) = (fun (x:ℝ×ℝ) ↦ ruffle ((↑N₀ + 1) * x.2)) := by
+          exact rfl
+
+        rw [duh] at fin
+        exact fin
+
+
+
+
+      exact sufficient
+
+
     have im : ∀ s, CircleImmersion (γ s) := by
       intro s
-      have cdiff : ContDiff ℝ ⊤ (γ s) := by sorry
-      have periodic : Periodic (γ s) 1 := by sorry
+      have cdiff : ContDiff ℝ ⊤ (γ s) := by
+        simp only
+        apply ContDiff.add
+        apply ContDiff.add
+        apply ContDiff.smul
+        exact contDiff_const
+        exact imm_γ₀.diff
+        apply ContDiff.smul
+        exact contDiff_const
+        exact imm_γ₁.diff
+        apply ContDiff.smul
+        exact contDiff_const
+        apply ContDiff.mul
+        apply ContDiff.comp
+        exact Complex.contDiff_exp
+        apply ContDiff.smul
+        apply ContDiff.add
+        apply ContDiff.mul
+        exact contDiff_const
+        exact hθ₀_diff
+        apply ContDiff.mul
+        exact contDiff_const
+        exact hθ₁_diff
+        exact contDiff_const
+
+        have : ContDiff ℝ ⊤ ( fun (x:ℝ) ↦ (↑N₀ + 1) * x ) := by
+          apply ContDiff.mul
+          exact contDiff_const
+          exact contDiff_id
+
+        have this2 := ruffle_diff
+
+        have fin := ContDiff.comp this2 this
+
+        have duh : (ruffle ∘ fun (x:ℝ) ↦ (↑N₀ + 1) * x) = (fun (x:ℝ) ↦ ruffle ((↑N₀ + 1) * x)) := by
+          exact rfl
+
+        rw [duh] at fin
+        exact fin
+
+
+      have periodic : Periodic (γ s) 1 := by
+        unfold Periodic
+        intro x
+
+        have pϝ : Periodic (ϝ s) 1 := by
+          intro x
+          simp
+          have pγ₀ := imm_γ₀.per x
+          have pγ₁ := imm_γ₁.per x
+          rw [pγ₀]
+          rw [pγ₁]
+
+        have pθ : Periodic (θ s) 1 := by
+          intro x
+          simp
+          rw [hθ₀_per x]
+          rw [hθ₁_per x]
+
+
+        have p_ruffle : Periodic (fun x ↦ ruffle ((N₀ + 1) * x)) 1 := by
+          intro x
+          simp
+          unfold ruffle
+          simp
+          constructor
+          have : Real.sin (4 * π * ((↑N₀ + 1) * (x + 1))) = Real.sin (4 * π * ((↑N₀ + 1) * x ) + 4 * π * (N₀ + 1)) := by
+            ring_nf
+
+          rw [this]
+
+          have : ∀ k: ℕ, Real.sin (4 * π * (k * x ) + 4 * π * k) = Real.sin (4 * π * (k * x )) := by
+            intro k
+            have fact := Real.sin_periodic
+            have fact2 := Function.Periodic.nat_mul fact (2*k)
+            specialize fact2 (4 * π * (↑k * x))
+            simp at fact2
+            have : 2 * ↑k * (2 * π) = 4 * π * k := by
+              ring
+            rw [this] at fact2
+            rw [fact2]
+          specialize this (N₀ +1)
+          push_cast at this
+
+          rw [this]
+
+          have : Real.sin (2 * π * ((↑N₀ + 1) * (x + 1))) = Real.sin (2 * π * ((↑N₀ + 1) * x ) + 2 * π * (N₀ + 1)) := by
+            ring_nf
+
+          rw [this]
+
+          have : ∀ k: ℕ, Real.sin (2 * π * (k * x ) + 2 * π * k) = Real.sin (2 * π * (k * x )) := by
+            intro k
+            have fact := Real.sin_periodic
+            have fact2 := Function.Periodic.nat_mul fact (k)
+            specialize fact2 (2 * π * (↑k * x))
+
+            rw [← fact2]
+
+            have : ↑k * (2 * π) = 2 * π * ↑k := by
+              ring
+            rw [this]
+
+          specialize this (N₀ +1)
+          push_cast at this
+
+          rw [this]
+
+        simp
+        specialize pϝ x
+        specialize pθ x
+        specialize p_ruffle x
+        simp at pϝ
+        rw [← pϝ]
+        simp
+
+        simp at pθ
+        rw [← pθ]
+        simp
+
+        simp at p_ruffle
+        rw [←p_ruffle ]
+        simp
+
+
+
+
+
       have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by sorry
       exact { diff := cdiff, per := periodic, deriv_ne := dγnon0 }
 
