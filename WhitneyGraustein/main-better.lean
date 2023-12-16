@@ -55,7 +55,7 @@ implies that K₁HN - K₂H - K₃ > 0
 This is required to construct our gamma function and for the main phase.
 -/
 
-lemma root_lemma_maybe {H:ℝ} (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
+lemma root_lemma_maybe {H : ℝ} (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
   /- Claim that N₀ = max (⌊(K₃ + K₂ * H) / (K₁ * H) + 1⌋) (0)
 
@@ -248,8 +248,9 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
   exact contDiff_const
   exact contDiff_const
   exact contDiff_const
+  -/
   /-credit for this last part: Ruben Van de Velde-/
-  simp only [smul_eq_mul]
+  /-simp only [smul_eq_mul]
   apply ContDiff.mul ?_ contDiff_const
   apply ContDiff.mul contDiff_const ?_
   simp_rw [← Complex.ofReal_ofNat, ← Complex.ofReal_mul, ←Complex.ofReal_sin]
@@ -282,25 +283,18 @@ lemma ρ_mem : ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry
 @[simp] lemma rho_one : ρ 1 = 1 := sorry
 
 
-theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁):
+theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
 
   rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp, hθ₀_per⟩
   rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp, hθ₁_per⟩
 
-  have fact {A : ℂ} : 0 = A + (-A) := by norm_num
-
-  -- have critical : ∀ K₁ > 0, ∀ H > 0, ∀ N > N₀, ∀ s, ∀ t, ‖deriv (γ s) t‖ ≥ (K₁ s) * N * H - (K₂ s) * H - (K₃ s)
-  -- fix γ₀, γ₁, and ρ
-  -- ∀ H > 0, ∃ N₀, ∀ N ≥ N₀, K₁ * N * H - K₂ * H - K₃ > 0
-
   let ϝ := fun (s t : ℝ) ↦ (1 - (ρ s)) • (γ₀ t) + (ρ s) • γ₁ t
+  have dϝ (s t : ℝ) : deriv (ϝ s) t = (1 - (ρ s)) • deriv γ₀ t + (ρ s) • deriv γ₁ t := sorry
   let θ := fun (s t : ℝ) ↦ (1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t)
   --im not in the mind to deal with uncurrying right now
   have dR (s t : ℝ) : deriv (fun (t' : ℝ) ↦ R (θ s t')) t = R ((θ s t) + π / 2) * deriv (θ s) t := by sorry
-
-
 
   let unit_compact : IsCompact unit := isCompact_Icc
   let unit_nonempty : Set.Nonempty unit := nonempty_of_nonempty_subtype
@@ -389,9 +383,9 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) cont.continuousOn with
     ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
   let K₂ := normB s₂ t₂
-
-  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (θ s t)) --NOTICE NEITHER H NOR N IS INCLUDED IN THIS STATEMENT.
-  let normC := fun s t ↦ ‖C s t‖
+  ------------------------------------------------------------------------CHECK IF 2 π SHOULD REALLY BE HERE
+  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (θ s t)) --NOTICE NEITHER H NOR N₀ IS INCLUDED IN THIS STATEMENT.
+  let normC := fun s t ↦ ‖C s t‖--Im not quite sure how to address this; the underlying argument is that this is true for any nonzero scaling of the t argued to the deriv, and similarly the extrema of ‖C‖ are also unchanged.
 
   have cont : Continuous (uncurry normC) := by
     have c1 := ((contDiff_top_iff_deriv.1 (ruffle_diff)).2).continuous
@@ -458,12 +452,12 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   --Prove K₁ is positive and do the same for H (or set H = 1), get N₀, then N
 
-  let γ : ℝ → ℝ → ℂ := fun s t ↦ ϝ s t + (h s) • (R (θ s t) * ruffle ((N₀+1) * t))
+  let γ : ℝ → ℝ → ℂ := fun s t ↦ ϝ s t + (h s) • (R (θ s t) * ruffle ((N₀ + 1) * t))
   use γ
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
   · have dif : ContDiff ℝ ⊤ (uncurry γ) := by
-      have sufficient : ContDiff ℝ ⊤ (fun (x:ℝ × ℝ ) ↦ ϝ x.1 x.2 + (h x.1) • (R (θ x.1 x.2) * ruffle ((N₀+1) * x.2))) := by
+      have sufficient : ContDiff ℝ ⊤ (fun (x : ℝ × ℝ) ↦ ϝ x.1 x.2 + (h x.1) • (R (θ x.1 x.2) * ruffle ((N₀ + 1) * x.2))) := by
         apply ContDiff.add
         exact ϝ_diff
         apply ContDiff.smul
@@ -474,22 +468,18 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         apply ContDiff.smul
         exact θ_diff
         exact contDiff_const
-        have : ContDiff ℝ ⊤ ( fun (x:ℝ× ℝ) ↦ (↑N₀ + 1) * x.2 ) := by
+        have : ContDiff ℝ ⊤ (fun (x : ℝ × ℝ) ↦ (↑N₀ + 1) * x.2) := by
           apply ContDiff.snd'
           apply ContDiff.mul
           exact contDiff_const
           exact contDiff_id
-
         have this2 := ruffle_diff
         have fin := ContDiff.comp this2 this
-        have duh : (ruffle ∘ fun (x:ℝ× ℝ) ↦ (↑N₀ + 1) * x.2) = (fun (x:ℝ×ℝ) ↦ ruffle ((↑N₀ + 1) * x.2)) := by
+        have duh : (ruffle ∘ fun (x : ℝ × ℝ) ↦ (↑N₀ + 1) * x.2) = (fun (x : ℝ × ℝ) ↦ ruffle ((↑N₀ + 1) * x.2)) := by
           exact rfl
-
         rw [duh] at fin
         exact fin
-
       exact sufficient
-
 
     have im : ∀ s, CircleImmersion (γ s) := by
       intro s
@@ -518,11 +508,11 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         exact hθ₁_diff
         exact contDiff_const
 
-        have : ContDiff ℝ ⊤ ( fun (x:ℝ) ↦ (↑N₀ + 1) * x ) := ContDiff.mul contDiff_const contDiff_id
+        have : ContDiff ℝ ⊤ (fun (x : ℝ) ↦ (↑N₀ + 1) * x) := ContDiff.mul contDiff_const contDiff_id
 
         have fin := ContDiff.comp ruffle_diff this
 
-        have duh : (ruffle ∘ fun (x:ℝ) ↦ (↑N₀ + 1) * x) = (fun (x:ℝ) ↦ ruffle ((↑N₀ + 1) * x)) := rfl
+        have duh : (ruffle ∘ fun (x : ℝ) ↦ (↑N₀ + 1) * x) = (fun (x : ℝ) ↦ ruffle ((↑N₀ + 1) * x)) := rfl
 
         rw [duh] at fin
         exact fin
@@ -571,12 +561,12 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
           rw [this]
 
-          have : Real.sin (2 * π * ((↑N₀ + 1) * (x + 1))) = Real.sin (2 * π * ((↑N₀ + 1) * x ) + 2 * π * (N₀ + 1)) := by
+          have : Real.sin (2 * π * ((↑N₀ + 1) * (x + 1))) = Real.sin (2 * π * ((↑N₀ + 1) * x) + 2 * π * (N₀ + 1)) := by
             ring_nf
 
           rw [this]
 
-          have : ∀ k : ℕ, Real.sin (2 * π * (k * x ) + 2 * π * k) = Real.sin (2 * π * (k * x)) := by
+          have : ∀ k : ℕ, Real.sin (2 * π * (k * x) + 2 * π * k) = Real.sin (2 * π * (k * x)) := by
             intro k
             have fact := Real.sin_periodic
             have fact2 := Function.Periodic.nat_mul fact (k)
@@ -611,22 +601,27 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
       have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by
         intro t
-        simp
-        push_neg
+        have subcritical : K₁ * H * ↑(N₀ + 1) - (K₂ * H + K₃) > 0 := hN₀ (N₀ + 1) (Nat.lt.base N₀) --just so youre aware
+        have critical : ‖deriv (γ s) t‖ ≥ K₁ * (N₀ + 1) * H - K₂ * H - K₃ := sorry --we need this
+
         have bro_on_god₀ : deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = _ := by
           calc
           deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t
             = (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t + deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t := by sorry --product rule
           _ = (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by sorry --left term is an rfl and a chain rule, right term using dR (up to a hidden rfl and rewriting the statement of dR)
           --the norms of each of the above terms are (supposedly) bounded by K₁ and K₂ respectively. Might need to demonstrate that these terms are identical to the things in those statements
-        --have bro_on_god₁ : deriv (γ s) t = deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t := by sorry
-          --calc
-          --deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t' + ↑(ρ s) * γ₁ t' + ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by sorry--rw [deriv_add _ _, deriv_add _ _] --or rw with linearity to cover several lines if thats a thing we can do
-          --_ = ((1 - ↑(ρ s)) * deriv (fun t' ↦ γ₀ t') t) + (↑(ρ s) * deriv (fun t' ↦ γ₁ t') t) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by sorry--pulling out a complex constant thrice
+        have bro_on_god₁ : deriv (γ s) t = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by
+          calc
+          deriv (γ s) t = deriv (fun t' ↦ ϝ s t' + (h s) • (R (θ s t') * ruffle ((N₀ + 1) * t'))) t := rfl
+          _ = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by sorry--rw deriv_add _ _ twice i think or rw with linearity to cover several lines if thats a thing we can do
+          _ = ((1 - ↑(ρ s)) * deriv (fun t' ↦ γ₀ t') t) + (↑(ρ s) * deriv (fun t' ↦ γ₁ t') t) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by sorry--pulling out a complex constant thrice
+          _ = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by sorry--associating A
+          _ = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := sorry --using the identity from bro_on_god₀
         --expanding in preparation for a rewrite
         --then develop the facts that the norm of each term is appropriately related to each K
         --then below apply the rewrites, triangle inequality, bing bang boom you gottem
-        have f : ‖deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t‖ > 0 := by
+        have ff : ‖(((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)))‖ ≥ ‖↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)))‖ - ‖(((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t))‖ := triangle
+        have f : ‖deriv (γ s) t‖ > 0 := by
           sorry
         exact ne_zero_of_map (ne_of_gt f)
 
@@ -641,3 +636,4 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       simp [γ, ϝ]
 
 end WhitneyGraustein
+--apparently there is an unterminated comment somewhere; I searched briefly, could not find.
