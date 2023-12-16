@@ -609,9 +609,18 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
       have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by
         intro t
-        have bro_on_god₀ : deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t
-          = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by sorry--rw with linearity twice
         simp
+        push_neg
+        --have bro_on_god₀ : deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = _ := by
+          --calc
+          --deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t'))) t + deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t'))) t := by sorry --product rule
+        --have bro_on_god₁ : deriv (γ s) t = deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t := by sorry
+          --calc
+          --deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t' + ↑(ρ s) * γ₁ t' + ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by sorry--rw [deriv_add _ _, deriv_add _ _] --or rw with linearity to cover several lines if thats a thing we can do
+          --_ = ((1 - ↑(ρ s)) * deriv (fun t' ↦ γ₀ t') t) + (↑(ρ s) * deriv (fun t' ↦ γ₁ t') t) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by sorry--pulling out a complex constant thrice
+        --expanding in preparation for a rewrite
+        --then develop the facts that the norm of each term is appropriately related to each K
+        --then below apply the rewrites, triangle inequality, bing bang boom you gottem
         have f : ‖deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t‖ > 0 := by
           sorry
         exact ne_zero_of_map (ne_of_gt f)
