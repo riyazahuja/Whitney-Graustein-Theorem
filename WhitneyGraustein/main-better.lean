@@ -174,7 +174,8 @@ lemma deriv_sin_local {f : ℝ → ℝ} {x : ℝ} (hc : DifferentiableAt ℝ f x
 
 lemma deriv_sin_local' (t : ℝ):
     -deriv (fun (x:ℝ) ↦ (↑(Real.sin (4 * π * x)):ℂ)) t = -↑(Real.cos (4 * π * t) * deriv (fun x ↦ 4 * π * x) t):= by
-    refine ((fun {z w} ↦ Complex.ext_iff.mpr) ?_).symm
+  refine ((fun {z w} ↦ Complex.ext_iff.mpr) ?_).symm
+  sorry
 
 
 lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
@@ -200,13 +201,9 @@ lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0
   push_cast at opp
   rw [deriv_const_mul] at opp
   sorry
-
-
-
-
-
-
-
+  sorry
+  sorry
+  sorry
 
 
   /-TODO!!!!!! -/
@@ -223,10 +220,14 @@ lemma coer_diff : ContDiff ℝ ⊤ fun (x:ℝ) ↦ (x:ℂ) := by
   simp
 
 
-
 lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
-  rw [duh]
+  /-
+  have f : (ContDiff ℝ ⊤ (fun x ↦ Real.sin (4 * π * x))) → ContDiff ℝ ⊤ (fun x ↦ ofReal' (Real.sin (4 * π * x))) := by sorry
 
+  have ff : ContDiff ℝ ⊤ Real.sin := Real.contDiff_sin
+  -/
+  /-
+  rw [duh]
   apply ContDiff.add
   apply ContDiff.neg
   apply ContDiff.mul
@@ -237,17 +238,13 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
   apply ContDiff.neg
   apply ContDiff.mul
   exact contDiff_const
-
   exact coer_diff
-
   exact contDiff_const
   apply ContDiff.cexp
   apply ContDiff.mul
   apply ContDiff.mul
   exact contDiff_const
-
   exact coer_diff
-
   exact contDiff_const
   exact contDiff_const
   exact contDiff_const
@@ -260,15 +257,8 @@ lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
   apply ContDiff.sin
   apply ContDiff.mul contDiff_const ?_
   apply contDiff_id
-
-
-
-
-
-
-
-
-
+  -/
+  sorry
 
   /-FINISH!!!!!!!!!-/
 
@@ -367,12 +357,12 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       apply Continuous.add
       apply Continuous.neg
       apply Continuous.comp'
-      exact Complex.continuous_sin
-      apply Continuous.comp
-      exact continuous_mul_left (4 * π : ℂ)
-      apply Continuous.comp'
       exact continuous_ofReal
+      apply Continuous.comp'
+      exact Real.continuous_sin
       apply Continuous.comp
+      exact continuous_mul_left (4 * π : ℝ)
+      apply Continuous.comp'
       exact continuous_snd
       exact continuous_id'
 
@@ -380,12 +370,13 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       apply Continuous.comp
       exact continuous_mul_left 2
       apply Continuous.comp'
-      exact Complex.continuous_sin
+      exact Real.continuous_sin
       apply Continuous.comp
-      exact continuous_mul_left (2 * π : ℂ)
+      exact continuous_mul_left (2 * π : ℝ)
       apply Continuous.comp'
-      exact continuous_ofReal
       exact continuous_snd
+
+      exact continuous_id'
 
       exact continuous_const
 
@@ -474,8 +465,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         apply ContDiff.add
         exact ϝ_diff
         apply ContDiff.smul
-        have := h_diff
-        exact ContDiff.fst' this
+        exact ContDiff.fst' h_diff
         apply ContDiff.mul
         apply ContDiff.comp
         exact Complex.contDiff_exp
@@ -495,9 +485,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
         rw [duh] at fin
         exact fin
-
-
-
 
       exact sufficient
 
@@ -529,17 +516,11 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         exact hθ₁_diff
         exact contDiff_const
 
-        have : ContDiff ℝ ⊤ ( fun (x:ℝ) ↦ (↑N₀ + 1) * x ) := by
-          apply ContDiff.mul
-          exact contDiff_const
-          exact contDiff_id
+        have : ContDiff ℝ ⊤ ( fun (x:ℝ) ↦ (↑N₀ + 1) * x ) := ContDiff.mul contDiff_const contDiff_id
 
-        have this2 := ruffle_diff
+        have fin := ContDiff.comp ruffle_diff this
 
-        have fin := ContDiff.comp this2 this
-
-        have duh : (ruffle ∘ fun (x:ℝ) ↦ (↑N₀ + 1) * x) = (fun (x:ℝ) ↦ ruffle ((↑N₀ + 1) * x)) := by
-          exact rfl
+        have duh : (ruffle ∘ fun (x:ℝ) ↦ (↑N₀ + 1) * x) = (fun (x:ℝ) ↦ ruffle ((↑N₀ + 1) * x)) := rfl
 
         rw [duh] at fin
         exact fin
@@ -577,15 +558,13 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
           have : ∀ k: ℕ, Real.sin (4 * π * (k * x ) + 4 * π * k) = Real.sin (4 * π * (k * x )) := by
             intro k
-            have fact := Real.sin_periodic
-            have fact2 := Function.Periodic.nat_mul fact (2*k)
+            have fact2 := Function.Periodic.nat_mul Real.sin_periodic (2*k)
             specialize fact2 (4 * π * (↑k * x))
             simp at fact2
-            have : 2 * ↑k * (2 * π) = 4 * π * k := by
-              ring
+            have : 2 * ↑k * (2 * π) = 4 * π * k := by ring
             rw [this] at fact2
             rw [fact2]
-          specialize this (N₀ +1)
+          specialize this (N₀ + 1)
           push_cast at this
 
           rw [this]
@@ -595,7 +574,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
           rw [this]
 
-          have : ∀ k: ℕ, Real.sin (2 * π * (k * x ) + 2 * π * k) = Real.sin (2 * π * (k * x )) := by
+          have : ∀ k : ℕ, Real.sin (2 * π * (k * x ) + 2 * π * k) = Real.sin (2 * π * (k * x)) := by
             intro k
             have fact := Real.sin_periodic
             have fact2 := Function.Periodic.nat_mul fact (k)
@@ -625,38 +604,22 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         simp
 
         simp at p_ruffle
-        rw [←p_ruffle ]
+        rw [← p_ruffle]
         simp
 
+      have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by
+        intro t
+        have bro_on_god₀ : deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t
+          = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by sorry--rw with linearity twice
+        simp
+        have f : ‖deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t‖ > 0 := by
+          sorry
+        exact ne_zero_of_map (ne_of_gt f)
 
-
-
-
-      have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by sorry
       exact { diff := cdiff, per := periodic, deriv_ne := dγnon0 }
 
     exact { diff := dif, imm := im }
-  --HtpyCircleImmersion (γ : ℝ → ℝ → ℂ)
-    --requires diff : ContDiff ℝ ⊤ (uncurry γ)
-      --should fall out of some composition stuff
-    -- requires imm : ∀ s, CircleImmersion (γ s)
-      --requires diff : ContDiff ℝ ⊤ (γ s)
-      --requires per : Periodic (γ s) 1
-        --requires ∀ t, (γ s) (t + 1) = (γ s) t
-          --(ϝ s) := fun t ↦ t ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t
-          --(θ s) := t ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t
-          --(γ s) := fun t ↦ (ϝ s) t + (h s) * (R ((θ s) t)) * ruffling (N * t)
-          --       = fun t ↦ (fun t ↦ t ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t) t + (h s) * (R ((t ↦ (1 - (ρ s)) * (γ₀ t) + (ρ s) * γ₁ t) t)) * ruffle (N * t)
-          --       = ...
-      --requires derive_ne : ∀ t, deriv γ t ≠ 0
-        --big thing here
-        --for a given s, K₁ = min of the norm of the thing with h and N in it
-          --exists cuz norm has clear lower bound 0, show that this in particular is nonzero because the terms are nonnegative and are never simultaneously zero
-        --for a given s, K₂ = max(‖h * deriv (θ s) * R * ruffle‖) on s, t ∈ [0, 1]
-          --exists since everything is bounded
-        --for a given s, K₃ = max(‖(1 - ρ s) * (γ₀ t) + (ρ s) * (γ₁ t)‖) on s, t ∈ [0, 1]
-          --exists since (ρ s) and γ₀ and γ₁ are all bounded on the period, etc or whatever
-        --using root_lemma_maybe (or whatever it renamed to), get N₀ and define γ, carry out some triangle inequality argument showing that ∀ s, ‖deriv (γ s) t‖ > 0, and hence nonzero.
+
   · constructor
     · intro t
       simp [γ, ϝ]
