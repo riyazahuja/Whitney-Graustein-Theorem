@@ -295,8 +295,10 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   -- fix γ₀, γ₁, and ρ
   -- ∀ H > 0, ∃ N₀, ∀ N ≥ N₀, K₁ * N * H - K₂ * H - K₃ > 0
 
-  let ϝ  := fun s t ↦ (1 - (ρ s)) • (γ₀ t) + (ρ s) • γ₁ t
-  let θ  := fun s t ↦ (1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t)
+  let ϝ := fun (s t : ℝ) ↦ (1 - (ρ s)) • (γ₀ t) + (ρ s) • γ₁ t
+  let θ := fun (s t : ℝ) ↦ (1 - (ρ s)) * (θ₀ t) + (ρ s) * (θ₁ t)
+  --im not in the mind to deal with uncurrying right now
+  have dR (s t : ℝ) : deriv (fun (t' : ℝ) ↦ R (θ s t')) t = R ((θ s t) + π / 2) * deriv (θ s) t := by sorry
 
 
 
@@ -611,9 +613,12 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         intro t
         simp
         push_neg
-        --have bro_on_god₀ : deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = _ := by
-          --calc
-          --deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t'))) t + deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t'))) t := by sorry --product rule
+        have bro_on_god₀ : deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = _ := by
+          calc
+          deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t
+            = (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t + deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t := by sorry --product rule
+          _ = (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by sorry --left term is an rfl and a chain rule, right term using dR (up to a hidden rfl and rewriting the statement of dR)
+          --the norms of each of the above terms are (supposedly) bounded by K₁ and K₂ respectively. Might need to demonstrate that these terms are identical to the things in those statements
         --have bro_on_god₁ : deriv (γ s) t = deriv (fun t ↦ (1 - ↑(ρ s)) * γ₀ t + ↑(ρ s) * γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * ruffle ((↑N₀ + 1) * t))) t := by sorry
           --calc
           --deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t' + ↑(ρ s) * γ₁ t' + ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by sorry--rw [deriv_add _ _, deriv_add _ _] --or rw with linearity to cover several lines if thats a thing we can do
