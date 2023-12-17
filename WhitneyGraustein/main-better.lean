@@ -601,6 +601,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
       have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by
         intro t
+        --gotta split this up by phase, just assume this is the "main phase" proof for now where h s = H for all s
         have subcritical : K₁ * H * ↑(N₀ + 1) - (K₂ * H + K₃) > 0 := hN₀ (N₀ + 1) (Nat.lt.base N₀) --just so youre aware
         have critical : ‖deriv (γ s) t‖ ≥ K₁ * (N₀ + 1) * H - K₂ * H - K₃ := sorry --we need this
 
@@ -621,15 +622,18 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         --then develop the facts that the norm of each term is appropriately related to each K
         --then below apply the rewrites, triangle inequality, bing bang boom you gottem
         --also you might need a little commutativity/associativity inside the norm to translate between facts here
-        have ff : ‖((1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t) + ↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)‖ ≥ _ := by
+        have ff : ‖((1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t) + ↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)‖ > 0 := by
           calc--oh RIP I think I have to write this backwards (so that H shows up on both terms rather than just one)
           ‖((1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t) + ↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)‖
             ≥ ‖↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)‖ - ‖↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)‖ - ‖(1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t‖ := in_particular
           _ = ‖↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)‖ - ‖↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)‖ - ‖↑(deriv (ϝ s) t)‖ := sorry --by rw [dϝ s t] + a few coercion things on the last term
           _ ≥ ‖↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)‖ - ‖↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)‖ - K₃ := sorry --im not sure if weve addressed how to require the computation is true on the unit, but in this case it really is totally bounded
           _ = ‖↑(h s)‖ * ‖((↑N₀ : ℂ) + 1)‖ * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t))‖ - ‖↑(h s)‖ * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t * ruffle ((↑N₀ + 1) * t)‖ - K₃ := sorry --splitting along multiplications of h and n components
-          _ = ‖↑(h s)‖ * (↑N₀ + 1 : ℝ) * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t))‖ - H * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t * ruffle ((↑N₀ + 1) * t)‖ - K₃ := sorry -- addressing ‖((↑N₀ : ℂ) + 1)‖ and the second h
+          _ = H * (↑N₀ + 1 : ℝ) * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t))‖ - H * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t * ruffle ((↑N₀ + 1) * t)‖ - K₃ := sorry --addressing ‖((↑N₀ : ℂ) + 1)‖ and h s in the main phase
+          _ ≥ H * (↑N₀ + 1 : ℝ) * K₃ - H * K₂ - K₃ := sorry --the boundings
+          _ > 0 := sorry --rearrange subcritical
         have f : ‖deriv (γ s) t‖ > 0 := by
+
           sorry
         exact ne_zero_of_map (ne_of_gt f)
 
