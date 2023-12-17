@@ -777,7 +777,25 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
           -/
 
         have ff : ‖(1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * ↑(deriv (θ s) t) * ruffle ((↑N₀ + 1) * t))‖ > 0 := by
-          sorry
+          let N:ℕ := (N₀) +1
+          let A := (1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t
+          let B := ↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * ↑(deriv (θ s) t) * ruffle (N * t)
+          let C := ↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle (N * t) * N
+
+
+          calc
+          ‖(1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * ↑(deriv (θ s) t) * ruffle ((↑N₀ + 1) * t))‖
+            = ‖A+B+C‖  := by sorry
+          _ ≥ ‖C‖-‖B‖-‖A‖ := by sorry
+          _ ≥ H * N * K₁ - H * K₂ - K₃ := by sorry
+          _ > 0 := by
+            have : N > N₀ := by simp
+            have := hN₀ N (this)
+            sorry
+
+
+
+
 
 
 
