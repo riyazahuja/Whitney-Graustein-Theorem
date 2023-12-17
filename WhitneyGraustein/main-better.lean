@@ -605,23 +605,165 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         have subcritical : K₁ * H * ↑(N₀ + 1) - (K₂ * H + K₃) > 0 := hN₀ (N₀ + 1) (Nat.lt.base N₀) --just so youre aware
         have critical : ‖deriv (γ s) t‖ ≥ K₁ * (N₀ + 1) * H - K₂ * H - K₃ := sorry --we need this
 
+
         have bro_on_god₀ : deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = _ := by
           calc
           deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t
-            = (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t + deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t := by sorry --product rule
-          _ = (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by sorry --left term is an rfl and a chain rule, right term using dR (up to a hidden rfl and rewriting the statement of dR)
+            = (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t + deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t := by
+              rw [deriv_mul]
+              exact
+                add_comm
+                  (deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * ruffle ((↑N₀ + 1) * t))
+                  (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t)
+
+              have d_θ: Differentiable ℝ (θ s) := by
+                simp only
+                apply Differentiable.add
+                apply Differentiable.mul
+                exact differentiable_const (1 - ρ s)
+                have := (hθ₀_diff.differentiable (OrderTop.le_top (1:ℕ∞)))
+                exact this
+                apply Differentiable.mul
+                exact differentiable_const (ρ s)
+                have this2 := (hθ₁_diff.differentiable (OrderTop.le_top (1:ℕ∞)))
+                exact this2
+              have := dR s t
+
+              have : HasDerivAt ((fun t' ↦ R (θ s t'))) (R (θ s t + π / 2) * ↑(deriv (θ s) t)) t := by
+                sorry -- HOW TO CONVERT DERIV TO HASDERIVAT????
+
+              exact HasDerivAt.differentiableAt this
+
+              have rewrite : (fun t' ↦ ruffle ((↑N₀ + 1) * t')) = ruffle ∘ (fun t' ↦ (↑N₀ + 1) * t') := by
+                exact rfl
+              rw [rewrite]
+              apply DifferentiableAt.comp
+              have d_ruff : Differentiable ℝ ruffle := (ruffle_diff.differentiable (OrderTop.le_top (1:ℕ∞)))
+              exact Differentiable.differentiableAt d_ruff
+              apply DifferentiableAt.mul
+
+              simp
+              simp
+
+          _ = (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by --left term is an rfl and a chain rule, right term using dR (up to a hidden rfl and rewriting the statement of dR)
+
+            simp
+
+
+            have fact1 : deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t = deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1) := by
+              have : (fun t' ↦ ruffle ((↑N₀ + 1) * t')) = ruffle ∘ (fun t' ↦ ((↑N₀+1)* t' ) ) := by exact rfl
+              rw[this]
+              have h1 : DifferentiableAt ℝ ruffle ((N₀ + 1) * t) := by sorry
+
+              have h2 : DifferentiableAt ℝ (fun (t':ℝ) ↦ (N₀ + 1) * t') t := by sorry
+
+              sorry
+
+
+
+
+
+            have fact2 : deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t = R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * ↑(deriv (fun t ↦ (1 - ρ s) * θ₀ t + ρ s * θ₁ t) t) := by
+              have := dR s t
+              exact this
+
+
+
+            rw[fact1,fact2]
+            simp
+            exact
+              Tactic.RingNF.mul_assoc_rev (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t))
+                (deriv ruffle ((↑N₀ + 1) * t)) (↑N₀ + 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
           --the norms of each of the above terms are (supposedly) bounded by K₁ and K₂ respectively. Might need to demonstrate that these terms are identical to the things in those statements
         have bro_on_god₁ : deriv (γ s) t = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by
           calc
           deriv (γ s) t = deriv (fun t' ↦ ϝ s t' + (h s) • (R (θ s t') * ruffle ((N₀ + 1) * t'))) t := rfl
-          _ = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by sorry--rw deriv_add _ _ twice i think or rw with linearity to cover several lines if thats a thing we can do
-          _ = ((1 - ↑(ρ s)) * deriv (fun t' ↦ γ₀ t') t) + (↑(ρ s) * deriv (fun t' ↦ γ₁ t') t) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by sorry--pulling out a complex constant thrice
-          _ = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by sorry--associating A
-          _ = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := sorry --using the identity from bro_on_god₀
-        --expanding in preparation for a rewrite
-        --then develop the facts that the norm of each term is appropriately related to each K
-        --then below apply the rewrites, triangle inequality, bing bang boom you gottem
-        --also you might need a little commutativity/associativity inside the norm to translate between facts here
+          _ = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by --rw deriv_add _ _ twice i think or rw with linearity to cover several lines if thats a thing we can do
+              rw [deriv_add]
+              simp only
+              rw [deriv_add]
+              simp
+
+              apply DifferentiableAt.smul
+              exact differentiableAt_const (1 - ρ s)
+              have := (imm_γ₀.diff.differentiable (OrderTop.le_top (1:ℕ∞)))
+              have :DifferentiableAt ℝ γ₀ t := Differentiable.differentiableAt this
+              exact this
+              apply DifferentiableAt.smul
+              exact differentiableAt_const (ρ s)
+              have := (imm_γ₁.diff.differentiable (OrderTop.le_top (1:ℕ∞)))
+              have :DifferentiableAt ℝ γ₁ t := Differentiable.differentiableAt this
+              exact this
+
+              have : HasDerivAt (ϝ s) ((1 - ρ s) • deriv γ₀ t + ρ s • deriv γ₁ t) t := by
+                sorry --USE dϝ???????
+
+              exact HasDerivAt.differentiableAt this
+              apply DifferentiableAt.smul
+              exact differentiableAt_const (h s)
+              apply DifferentiableAt.mul
+
+              /-
+
+              These last two goals look identical to some goals in bro_on_god₀.
+              Maybe we should take those out as larger lemmas and reuse.
+              It's all about deriv → HasDerivAt → DifferentiableAt
+
+              -/
+              sorry
+              sorry
+
+
+
+
+
+
+          _ = ((1 - ↑(ρ s)) * deriv (fun t' ↦ γ₀ t') t) + (↑(ρ s) * deriv (fun t' ↦ γ₁ t') t) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by --pulling out a complex constant thrice
+              rw [deriv_mul]
+              rw [deriv_const, zero_mul, zero_add]
+              rw [deriv_mul]
+              rw [deriv_const, zero_mul, zero_add]
+              rw [deriv_mul]
+              rw [deriv_const, zero_mul, zero_add]
+
+
+              /-
+              SAME DIFFERENITABLEAT THINGS AS BEFORE
+              -/
+              sorry
+              sorry
+              sorry
+              sorry
+              sorry
+              sorry
+
+
+          _ = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + (↑(h s) * deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t) := by--associating A
+              exact rfl
+
+          _ = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by--using the identity from bro_on_god₀
+              rw[bro_on_god₀]
+
+              simp
+              sorry
+
+
+
+
+        /-
         have ff : ‖((1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t) + ↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)‖ > 0 := by
           calc--oh RIP I think I have to write this backwards (so that H shows up on both terms rather than just one)
           ‖((1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t) + ↑(h s) * R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)‖
@@ -632,10 +774,23 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
           _ = H * (↑N₀ + 1 : ℝ) * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t))‖ - H * ‖R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t * ruffle ((↑N₀ + 1) * t)‖ - K₃ := sorry --addressing ‖((↑N₀ : ℂ) + 1)‖ and h s in the main phase
           _ ≥ H * (↑N₀ + 1 : ℝ) * K₃ - H * K₂ - K₃ := sorry --the boundings
           _ > 0 := sorry --rearrange subcritical
-        have f : ‖deriv (γ s) t‖ > 0 := by
+          -/
 
+        have ff : ‖(1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * ↑(deriv (θ s) t) * ruffle ((↑N₀ + 1) * t))‖ > 0 := by
           sorry
+
+
+
+        have f : ‖deriv (γ s) t‖ > 0 := by
+          rw [bro_on_god₁]
+          exact ff
+
         exact ne_zero_of_map (ne_of_gt f)
+
+        --expanding in preparation for a rewrite
+        --then develop the facts that the norm of each term is appropriately related to each K
+        --then below apply the rewrites, triangle inequality, bing bang boom you gottem
+        --also you might need a little commutativity/associativity inside the norm to translate between facts here
 
       exact { diff := cdiff, per := periodic, deriv_ne := dγnon0 }
 
