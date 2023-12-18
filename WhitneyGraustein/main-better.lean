@@ -467,7 +467,7 @@ lemma WG_pair.θ_diff : ContDiff ℝ ⊤ (uncurry p.θ) := by
 
 end θ
 
-
+/-
 section ABC
 
 variable (p : WG_pair)
@@ -475,10 +475,10 @@ variable (p : WG_pair)
 
 section A
 
-def WG_pair.A := fun s t ↦ deriv (p.ϝ s) t
-def WG_pair.normA := fun s t ↦ ‖p.A s t‖
+def A := fun s t ↦ deriv (p.ϝ s) t
+def normA := fun s t ↦ ‖(A p) s t‖
 
-lemma WG_pair.contA : Continuous (uncurry p.normA) := (ContDiff.continuous_partial_snd (p.ϝ_diff) (OrderTop.le_top (1:ℕ∞))).norm
+lemma contA : Continuous (uncurry (normA p)) := (ContDiff.continuous_partial_snd (p.ϝ_diff) (OrderTop.le_top (1:ℕ∞))).norm
 
 end A
 
@@ -486,12 +486,12 @@ end A
 
 section B
 
-def WG_pair.B (s t : ℝ) := (deriv (p.θ s) t) • (R ((p.θ s t) + π / 2) * ruffle t)
-def WG_pair.normB := fun s t ↦ ‖p.B s t‖
+def B (s t : ℝ) := (deriv (p.θ s) t) • (R ((p.θ s t) + π / 2) * ruffle t)
+def normB := fun s t ↦ ‖(B p) s t‖
 
 
 
-lemma WG_pair.contB : Continuous (uncurry p.normB) := by
+lemma contB : Continuous (uncurry (normB p)) := by
   have c1 := (ContDiff.continuous_partial_snd (p.θ_diff) (OrderTop.le_top (1:ℕ∞)))
   have c2 : Continuous (fun (x:(ℝ×ℝ)) ↦ R ((p.θ x.1 x.2) + π / 2) * ruffle x.2) := by
     apply Continuous.mul
@@ -567,7 +567,7 @@ end C
 
 end ABC
 
-
+-/
 
 
 section WGMain
@@ -585,27 +585,26 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let p:WG_pair := ⟨γ₀, γ₁, imm_γ₀, imm_γ₁, hyp⟩
 
 
-  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contA.continuousOn with
+  /-A-/
+
+  let A := fun s t ↦ deriv (p.ϝ s) t
+  let normA := fun s t ↦ ‖A s t‖
+
+  have contA : Continuous (uncurry normA) := (ContDiff.continuous_partial_snd (p.ϝ_diff) (OrderTop.le_top (1:ℕ∞))).norm
+
+  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) contA.continuousOn with
     ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
-  let K₃ := p.normA s₃ t₃
+  let K₃ := normA s₃ t₃
 
 
-  --let B := fun s t ↦ (deriv (θ s) t) • (R ((θ s t) + π / 2) * ruffle t) --NOTICE H IS NOT INCLUDED IN THIS STATEMENT.
-  /-let normB := fun s t ↦ ‖p.B s t‖
 
-  have θ_diff : ContDiff ℝ ⊤ (uncurry θ) := by
-    apply ContDiff.add
-    apply ContDiff.smul
-    apply ContDiff.sub
-    exact contDiff_const
-    exact ρ_diff.comp contDiff_fst
-    exact hθ₀_diff.comp contDiff_snd
-    apply ContDiff.smul
-    exact ρ_diff.comp contDiff_fst
-    exact hθ₁_diff.comp contDiff_snd
+  /-B-/
+  let B (s t : ℝ) := (deriv (p.θ s) t) • (R ((p.θ s t) + π / 2) * ruffle t)
+  let normB := fun s t ↦ ‖B s t‖
 
 
-  have cont : Continuous (uncurry p.normB) := by
+
+  have contB : Continuous (uncurry normB) := by
     have c1 := (ContDiff.continuous_partial_snd (p.θ_diff) (OrderTop.le_top (1:ℕ∞)))
     have c2 : Continuous (fun (x:(ℝ×ℝ)) ↦ R ((p.θ x.1 x.2) + π / 2) * ruffle x.2) := by
       apply Continuous.mul
@@ -646,12 +645,41 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
     exact (Continuous.smul c1 c2).norm
 
--/
 
-  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contB.continuousOn with
+  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) contB.continuousOn with
     ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
-  let K₂ := p.normB s₂ t₂
+  let K₂ := normB s₂ t₂
 
+
+  /-C-/
+  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (p.θ s t)) --NOTICE NEITHER H NOR N₀ IS INCLUDED IN THIS STATEMENT.
+  let normC := fun s t ↦ ‖C s t‖--Im not quite sure how to address this; the underlying argument is that this is true for any nonzero scaling of the t argued to the deriv, and similarly the extrema of ‖C‖ are also unchanged.
+
+  have contC : Continuous (uncurry normC) := by
+    have c1 := ((contDiff_top_iff_deriv.1 (ruffle_diff)).2).continuous
+
+    have c2 : Continuous (uncurry p.θ) := p.θ_diff.continuous
+
+    have c3 : Continuous (fun (x:(ℝ×ℝ)) ↦ (2 * π) • (deriv ruffle x.2 * R (p.θ x.1 x.2))) := by
+      apply Continuous.smul
+      exact continuous_const
+      apply Continuous.mul
+      apply Continuous.comp'
+      exact c1
+      exact continuous_snd
+      apply Continuous.comp
+      exact Complex.continuous_exp
+      apply Continuous.smul
+      exact c2
+      exact continuous_const
+
+    exact c3.norm
+
+
+
+  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) contC.continuousOn with
+    ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
+  let K₁ := normC s₁ t₁
 
   /-
   ------------------------------------------------------------------------CHECK IF 2 π SHOULD REALLY BE HERE
@@ -679,16 +707,16 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     exact c3.norm
 -/
 
-  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) p.contC.continuousOn with
-    ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
-  let K₁ := p.normC s₁ t₁
 
   have K₁_pos : K₁ > 0 := by
     by_contra opp
     push_neg at opp
     simp only at opp
     have := norm_nonneg ((2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)))
-    have opp': ‖(2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))‖ = 0 := by exact LE.le.antisymm opp this
+    have opp': ‖(2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))‖ = 0 := by
+      apply LE.le.antisymm
+
+      --exact LE.le.antisymm opp this
     clear opp this
 
     rw [norm_smul (2*π) (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))] at opp'
