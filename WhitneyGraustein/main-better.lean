@@ -27,9 +27,9 @@ structure CircleImmersion.lift (θ : ℝ → ℝ) : Prop where
 -/
 
 def CircleImmersion.lift {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) : ℝ → ℝ := sorry
-/-MAKE SURE THE PERIODIC SHOULD BE DEFINED AND NOT PROVEN-/
+
 lemma lift_exists {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) :
-  ∃ θ : ℝ → ℝ, (θ = CircleImmersion.lift imm_γ) ∧ (ContDiff ℝ ⊤ θ) ∧ (∀ (t : ℝ), (deriv γ t = ‖deriv γ t‖ * exp (I * θ t))) ∧ (Periodic θ 1) := sorry
+  ∃ θ : ℝ → ℝ, (θ = CircleImmersion.lift imm_γ) ∧ (ContDiff ℝ ⊤ θ) ∧ (∀ (t : ℝ), (deriv γ t = ‖deriv γ t‖ * exp (I * θ t))) := sorry
 
 -- Lift unique?
 
@@ -178,6 +178,14 @@ lemma deriv_sin_local' (t : ℝ):
   sorry
 
 
+
+lemma coer_deriv : ∀ t:ℝ, deriv (fun (x:ℝ) ↦ (x:ℂ)) t = 1 := by
+  intro t
+  have id_deriv : HasDerivAt (fun (x:ℂ)↦ (x:ℂ)) 1 t := by exact hasDerivAt_id' ((↑t):ℂ)
+  have hda_main := HasDerivAt.comp_ofReal id_deriv
+  exact HasDerivAt.deriv hda_main
+
+
 lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0 := by
   rw[duh]
 
@@ -200,6 +208,28 @@ lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0
     deriv_mul_const_field', deriv_const_mul_field'] at opp
   push_cast at opp
   rw [deriv_const_mul] at opp
+
+  have : (fun (x:ℝ) ↦ Complex.sin (2 * ↑π * ↑x)) = Complex.sin ∘ (fun (x:ℝ) ↦ (2 * ↑π * ↑x)) := by exact rfl
+  rw [this] at opp
+  rw [deriv.comp] at opp
+  rw [Complex.deriv_sin] at opp
+  clear this
+  rw [deriv_mul] at opp
+  rw [deriv_const, zero_mul, zero_add] at opp
+  rw [coer_deriv t, mul_one] at opp
+  sorry
+
+
+
+
+
+
+
+
+
+  sorry
+  sorry
+  sorry
   sorry
   sorry
   sorry
@@ -210,58 +240,48 @@ lemma ruffle_deriv_neq_zero_on_unit{t:ℝ}(ht: t ∈ unit): deriv ruffle t ≠ 0
 
 
 
-/-Credit: Alex J. Best-/
-lemma coer_diff : ContDiff ℝ ⊤ fun (x:ℝ) ↦ (x:ℂ) := by
-  refine IsBoundedLinearMap.contDiff ?hf
-  refine IsLinearMap.with_bound ?hf.hf 1 ?hf.h
-  refine { map_add := ?hf.hf.map_add, map_smul := ?hf.hf.map_smul }
-  simp
-  simp
-  simp
+/-Credit: Kevin Buzzard-/
+lemma coer_diff : ContDiff ℝ ⊤ fun (x:ℝ) ↦ (x:ℂ) :=
+  ContinuousLinearMap.contDiff ofRealClm
 
 
 lemma ruffle_diff : ContDiff ℝ ⊤ ruffle := by
-  /-
-  have f : (ContDiff ℝ ⊤ (fun x ↦ Real.sin (4 * π * x))) → ContDiff ℝ ⊤ (fun x ↦ ofReal' (Real.sin (4 * π * x))) := by sorry
 
-  have ff : ContDiff ℝ ⊤ Real.sin := Real.contDiff_sin
-  -/
-  /-
   rw [duh]
   apply ContDiff.add
   apply ContDiff.neg
-  apply ContDiff.mul
-  apply ContDiff.mul
-  apply ContDiff.sub
-  apply ContDiff.cexp
-  apply ContDiff.mul
-  apply ContDiff.neg
-  apply ContDiff.mul
-  exact contDiff_const
-  exact coer_diff
-  exact contDiff_const
-  apply ContDiff.cexp
-  apply ContDiff.mul
-  apply ContDiff.mul
-  exact contDiff_const
-  exact coer_diff
-  exact contDiff_const
-  exact contDiff_const
-  exact contDiff_const
-  -/
-  /-credit for this last part: Ruben Van de Velde-/
-  /-simp only [smul_eq_mul]
-  apply ContDiff.mul ?_ contDiff_const
-  apply ContDiff.mul contDiff_const ?_
-  simp_rw [← Complex.ofReal_ofNat, ← Complex.ofReal_mul, ←Complex.ofReal_sin]
-  apply coer_diff.comp
-  apply ContDiff.sin
-  apply ContDiff.mul contDiff_const ?_
-  apply contDiff_id
-  -/
-  sorry
 
-  /-FINISH!!!!!!!!!-/
+  have : (fun x ↦ ↑(Real.sin (4 * π * x))) = (fun (y:ℝ) ↦(y:ℂ)) ∘ (fun x ↦ Real.sin (4 * π * x)) := by
+    exact rfl
+  rw [this]
+  apply ContDiff.comp
+  exact coer_diff
+
+  have : (fun x ↦ Real.sin (4 * π * x) )= Real.sin ∘ (fun x ↦ (4 * π * x)) := by
+    exact rfl
+  rw[this]
+  apply ContDiff.comp
+  exact Real.contDiff_sin
+  apply ContDiff.mul
+  exact contDiff_const
+  exact contDiff_id
+
+
+  apply ContDiff.smul
+  apply ContDiff.mul
+  exact contDiff_const
+
+  have : (fun x ↦ Real.sin (2 * π * x) )= Real.sin ∘ (fun x ↦ (2 * π * x)) := by
+    exact rfl
+
+  rw[this]
+  apply ContDiff.comp
+  exact Real.contDiff_sin
+  apply ContDiff.mul
+  exact contDiff_const
+  exact contDiff_id
+
+  exact contDiff_const
 
 
 
@@ -287,8 +307,8 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
 
-  rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp, hθ₀_per⟩
-  rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp, hθ₁_per⟩
+  rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
+  rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
 
   let ϝ := fun (s t : ℝ) ↦ (1 - (ρ s)) • (γ₀ t) + (ρ s) • γ₁ t
   have dϝ (s t : ℝ) : deriv (ϝ s) t = (1 - (ρ s)) • deriv γ₀ t + (ρ s) • deriv γ₁ t := sorry
@@ -519,6 +539,11 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
       have periodic : Periodic (γ s) 1 := by
+      /-
+
+      REDO, θ IS NOT PERIODIC!!!!
+
+      -/
         unfold Periodic
         intro x
 
@@ -529,13 +554,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
           have pγ₁ := imm_γ₁.per x
           rw [pγ₀]
           rw [pγ₁]
-
-        have pθ : Periodic (θ s) 1 := by
-          intro x
-          simp
-          rw [hθ₀_per x]
-          rw [hθ₁_per x]
-
 
         have p_ruffle : Periodic (fun x ↦ ruffle ((N₀ + 1) * x)) 1 := by
           intro x
@@ -583,8 +601,25 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
           rw [this]
 
+        have p_R : Periodic R (2*π) := by
+          intro x
+          unfold R
+          have := Complex.exp_periodic (x• I)
+          rw [← this]
+          simp
+          have : (↑x + 2 * ↑π) * I = ↑x * I + 2 * ↑π * I := by
+            ring
+          rw [this]
+
+
+        have period : ((1 - ρ s) * θ₀ (x + 1) + ρ s * θ₁ (x + 1))= ((1 - ρ s) * θ₀ (x) + ρ s * θ₁ (x)) + 2*π := by
+          sorry --USE TURNING NUMBER HYP
+
+
         simp
+
         specialize pϝ x
+
         specialize pθ x
         specialize p_ruffle x
         simp at pϝ
@@ -786,12 +821,15 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
           calc
           ‖(1 - ↑(ρ s)) * deriv γ₀ t + ↑(ρ s) * deriv γ₁ t + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv ruffle ((↑N₀ + 1) * t) * (↑N₀ + 1)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * ↑(deriv (θ s) t) * ruffle ((↑N₀ + 1) * t))‖
             = ‖A+B+C‖  := by sorry
-          _ ≥ ‖C‖-‖B‖-‖A‖ := by sorry
+          _ ≥ ‖C‖-‖B‖-‖A‖ := in_particular
           _ ≥ H * N * K₁ - H * K₂ - K₃ := by sorry
           _ > 0 := by
             have : N > N₀ := by simp
             have := hN₀ N (this)
-            sorry
+            have duh : K₁ * H * ↑N - (K₂ * H + K₃) = H * ↑N * K₁ - H * K₂ - K₃ := by
+              ring
+            rw [← duh]
+            exact this
 
 
 
