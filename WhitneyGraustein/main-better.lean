@@ -17,11 +17,14 @@ structure CircleImmersion (γ : ℝ → ℂ) : Prop where
   per : Periodic γ 1
   deriv_ne : ∀ t, deriv γ t ≠ 0
 
-
+/-
 def CircleImmersion.lift {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) : ℝ → ℝ := sorry
 
 lemma lift_exists {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) :
   ∃ θ : ℝ → ℝ, (θ = CircleImmersion.lift imm_γ) ∧ (ContDiff ℝ ⊤ θ) ∧ (∀ (t : ℝ), (deriv γ t = ‖deriv γ t‖ * exp (I * θ t))) := sorry
+-/
+
+axiom CircleImmersion.lift {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) : ℝ → ℝ
 
 -- Lift unique?
 
@@ -31,9 +34,6 @@ variable {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ)
 axiom CircleImmersion.contDiff_lift : ContDiff ℝ ⊤ imm_γ.lift
 
 axiom CircleImmersion.deriv_eq (t : ℝ) : deriv γ t = ‖deriv γ t‖ * Complex.exp (I * imm_γ.lift t)
-
-
-
 
 axiom CircleImmersion.turningNumber {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) : ℤ
 
@@ -359,28 +359,6 @@ lemma p_ruffle : Periodic (fun x ↦ ruffle (N * x)) 1 := by
 end ruffle
 
 
-section R
-
-variable {γ₀ γ₁ : ℝ → ℂ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) (θ : ℝ→ ℝ → ℝ)
-
-def R : ℝ → ℂ := fun θ ↦ cexp (θ • I)
-
-lemma dR (s t : ℝ) : deriv (fun (t' : ℝ) ↦ R (θ s t')) t = R ((θ s t) + π / 2) * deriv (θ s) t := by sorry
-
-
-lemma p_R : Periodic R (2*π) := by
-          intro x
-          unfold R
-          have := Complex.exp_periodic (x• I)
-          rw [← this]
-          simp
-          have : (↑x + 2 * ↑π) * I = ↑x * I + 2 * ↑π * I := by
-            ring
-          rw [this]
-
-
-end R
-
 
 
 section ρ
@@ -413,6 +391,8 @@ structure WG_pair where
   imm_γ₀ : CircleImmersion γ₀
   imm_γ₁ : CircleImmersion γ₁
   turning_eq : imm_γ₀.turningNumber = imm_γ₁.turningNumber
+
+
 
 section ϝ
 variable (p : WG_pair)
@@ -450,7 +430,11 @@ section θ
 
 variable (p : WG_pair)
 
-def WG_pair.θ (s t : ℝ) := (1 - (ρ s)) * (p.imm_γ₀.lift t) + (ρ s) * (p.imm_γ₁.lift t)
+def WG_pair.θ₀ := p.imm_γ₀.lift
+
+def WG_pair.θ₁ := p.imm_γ₁.lift
+
+def WG_pair.θ (s t : ℝ) := (1 - (ρ s)) * (p.θ₀ t) + (ρ s) * (p.θ₁ t)
 
 lemma WG_pair.θ_diff : ContDiff ℝ ⊤ (uncurry p.θ) := by
   apply ContDiff.add
@@ -466,6 +450,31 @@ lemma WG_pair.θ_diff : ContDiff ℝ ⊤ (uncurry p.θ) := by
 --def B (s t : ℝ) := (deriv (p.θ s) t) • (R ((p.θ s t) + π / 2) * ruffle t)
 
 end θ
+
+
+
+section R
+
+
+def R : ℝ → ℂ := fun θ ↦ cexp (θ • I)
+
+lemma dR {p:WG_pair} (s t : ℝ) : deriv (fun (t' : ℝ) ↦ R (p.θ s t')) t = R ((p.θ s t) + π / 2) * deriv (p.θ s) t := by sorry
+
+
+lemma p_R : Periodic R (2*π) := by
+          intro x
+          unfold R
+          have := Complex.exp_periodic (x• I)
+          rw [← this]
+          simp
+          have : (↑x + 2 * ↑π) * I = ↑x * I + 2 * ↑π * I := by
+            ring
+          rw [this]
+
+
+end R
+
+
 
 /-
 section ABC
@@ -578,8 +587,8 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
   let tn := CircleImmersion.turningNumber imm_γ₀
 
-  rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
-  rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
+  --rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
+  --rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
 
 
   let p:WG_pair := ⟨γ₀, γ₁, imm_γ₀, imm_γ₁, hyp⟩
@@ -712,14 +721,13 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     by_contra opp
     push_neg at opp
     simp only at opp
-    have := norm_nonneg ((2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)))
-    have opp': ‖(2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))‖ = 0 := by
-      apply LE.le.antisymm
-
+    have := norm_nonneg ((2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁)))
+    have opp': ‖(2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁))‖ = 0 := by
+      sorry
       --exact LE.le.antisymm opp this
     clear opp this
 
-    rw [norm_smul (2*π) (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))] at opp'
+    rw [norm_smul (2*π) (deriv ruffle t₁ * R ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁))] at opp'
     apply mul_eq_zero.1 at opp'
     rcases opp' with A|opp
     simp at A
@@ -727,7 +735,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
       exact pi_ne_zero
     exact this A
 
-    rw [norm_mul (deriv ruffle t₁) (R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))] at opp
+    rw [norm_mul (deriv ruffle t₁) (R ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁))] at opp
     apply mul_eq_zero.1 at opp
     rcases opp with B|C
 
@@ -740,8 +748,8 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
     have : ∀ t:ℝ, t*I = t• I:= by
       intro t
       simp
-    specialize this ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)
-    have final := Complex.norm_exp_ofReal_mul_I ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)
+    specialize this ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁)
+    have final := Complex.norm_exp_ofReal_mul_I ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁)
     rw [this] at final
     rw [final] at C
     linarith
@@ -801,10 +809,24 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         apply ContDiff.add
         apply ContDiff.mul
         exact contDiff_const
-        exact hθ₀_diff
+
+        have := imm_γ₀.contDiff_lift
+        have t2 : p.θ₀ = (CircleImmersion.lift imm_γ₀) := by
+          unfold WG_pair.θ₀
+          simp only
+        rw [← t2] at this
+        exact this
+
         apply ContDiff.mul
         exact contDiff_const
-        exact hθ₁_diff
+
+        have := imm_γ₁.contDiff_lift
+        have t2 : p.θ₁ = (CircleImmersion.lift imm_γ₁) := by
+          unfold WG_pair.θ₁
+          simp only
+        rw [← t2] at this
+        exact this
+
         exact contDiff_const
 
         have : ContDiff ℝ ⊤ (fun (x : ℝ) ↦ (↑N₀ + 1) * x) := ContDiff.mul contDiff_const contDiff_id
@@ -818,58 +840,53 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
       have periodic : Periodic (γ s) 1 := by
-      /-
 
-      REDO, θ IS NOT PERIODIC!!!!
-
-      -/
         unfold Periodic
         intro x
+        dsimp only [γ]
 
 
+        rw [pϝ p s x]
+        have := p_ruffle (↑N₀+1) x
+        simp at this
+        rw [this]
 
+        clear this
 
+        have : R (p.θ s x) = R (p.θ s (x+1)) := by
+          unfold WG_pair.θ
+          have t0 := imm_γ₀.lift_add x 1
+          have t1 := imm_γ₁.lift_add x 1
 
+          have eq0: p.θ₀ = CircleImmersion.lift imm_γ₀ := by
+            exact rfl
 
+          have eq1: p.θ₁ = CircleImmersion.lift imm_γ₁ := by
+            exact rfl
 
+          rw [eq0, eq1]
+          simp at t0
+          simp at t1
 
-        have period : ((1 - ρ s) * θ₀ (x + 1) + ρ s * θ₁ (x + 1))= ((1 - ρ s) * θ₀ (x) + ρ s * θ₁ (x)) + 2*π*tn := by
-          rw [hθ₀_lift_is_lift]
-          rw [hθ₁_lift_is_lift]
+          rw [t0,t1]
+          rw [hyp]
 
-          rw [imm_γ₀.turningNumber_difference x]
-          rw [imm_γ₁.turningNumber_difference x]
+          have := (Function.Periodic.int_mul p_R (tn)) ((1 - ρ s) * CircleImmersion.lift imm_γ₀ x + ρ s * CircleImmersion.lift imm_γ₁ x)
+          rw[← this]
 
-          rw[← hyp]
-          have : (1 - ρ s) * (CircleImmersion.lift imm_γ₀ x + 2 * π * CircleImmersion.turningNumber imm_γ₀) + ρ s * (CircleImmersion.lift imm_γ₁ x + 2 * π * CircleImmersion.turningNumber imm_γ₀) = (1 - ρ s) * (CircleImmersion.lift imm_γ₀ x) + (1 - ρ s) * 2 * π * CircleImmersion.turningNumber imm_γ₀ + ρ s * (CircleImmersion.lift imm_γ₁ x) + ρ s * 2 * π * CircleImmersion.turningNumber imm_γ₀ := by
-            ring
+          have : (1 - ρ s) * CircleImmersion.lift imm_γ₀ x + ρ s * CircleImmersion.lift imm_γ₁ x + ↑tn * (2 * π) = (1 - ρ s) * (CircleImmersion.lift imm_γ₀ x + ↑(CircleImmersion.turningNumber imm_γ₁) * 2 * π) + ρ s * (CircleImmersion.lift imm_γ₁ x + ↑(CircleImmersion.turningNumber imm_γ₁) * 2 * π) := by
+            ring_nf
+            simp
+            rw [hyp]
+            rw [mul_comm]
           rw [this]
-          clear this
-          ring
 
-        simp
 
-        specialize pϝ x
+        rw [← this]
 
 
 
-        --specialize p_R x
-        specialize p_ruffle x
-        simp at pϝ
-        rw [← pϝ]
-        simp
 
-        simp at p_R
-        have := Function.Periodic.int_mul p_R (tn)
-
-
-
-        rw [← pθ]
-        simp
-
-        simp at p_ruffle
-        rw [← p_ruffle]
-        simp
 
       have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by
         intro t
@@ -888,7 +905,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
                   (deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * ruffle ((↑N₀ + 1) * t))
                   (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t)
 
-              have d_θ: Differentiable ℝ (θ s) := by
+              have d_θ: Differentiable ℝ (p.θ s) := by
                 simp only
                 apply Differentiable.add
                 apply Differentiable.mul
@@ -942,7 +959,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
             rw[fact1,fact2]
-            simp
+
             exact
               Tactic.RingNF.mul_assoc_rev (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t))
                 (deriv ruffle ((↑N₀ + 1) * t)) (↑N₀ + 1)
@@ -960,12 +977,14 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
           --the norms of each of the above terms are (supposedly) bounded by K₁ and K₂ respectively. Might need to demonstrate that these terms are identical to the things in those statements
-        have bro_on_god₁ : deriv (γ s) t = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by
+        have bro_on_god₁ : deriv (γ s) t = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (p.θ s) t) * ruffle ((↑N₀ + 1) * t)) := by
           calc
-          deriv (γ s) t = deriv (fun t' ↦ ϝ s t' + (h s) • (R (θ s t') * ruffle ((N₀ + 1) * t'))) t := rfl
+          deriv (γ s) t = deriv (fun t' ↦ p.ϝ s t' + (h s) • (R (p.θ s t') * ruffle ((N₀ + 1) * t'))) t := rfl
           _ = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by --rw deriv_add _ _ twice i think or rw with linearity to cover several lines if thats a thing we can do
               rw [deriv_add]
+
               simp only
+
               rw [deriv_add]
               simp
 
