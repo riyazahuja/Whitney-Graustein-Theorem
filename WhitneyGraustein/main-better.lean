@@ -895,30 +895,40 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         have critical : ‖deriv (γ s) t‖ ≥ K₁ * (N₀ + 1) * H - K₂ * H - K₃ := sorry --we need this
 
 
-        have bro_on_god₀ : deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = _ := by
+        have bro_on_god₀ : deriv (fun t' ↦ (R ((1 - ρ s) * p.θ₀ t' + ρ s * p.θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t = _ := by
           calc
-          deriv (fun t' ↦ (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t
-            = (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t + deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t := by
+          deriv (fun t' ↦ (R ((1 - ρ s) * p.θ₀ t' + ρ s * p.θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t
+            = (fun t' ↦ R ((1 - ρ s) * p.θ₀ t' + ρ s * p.θ₁ t')) t * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t + deriv (fun t' ↦ R ((1 - ρ s) * p.θ₀ t' + ρ s * p.θ₁ t')) t * (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t := by
               rw [deriv_mul]
               exact
                 add_comm
-                  (deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t * ruffle ((↑N₀ + 1) * t))
-                  (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t)
+                  (deriv (fun t' ↦ R ((1 - ρ s) * p.θ₀ t' + ρ s * p.θ₁ t')) t * ruffle ((↑N₀ + 1) * t))
+                  (R ((1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t) * deriv (fun t' ↦ ruffle ((↑N₀ + 1) * t')) t)
 
               have d_θ: Differentiable ℝ (p.θ s) := by
                 simp only
                 apply Differentiable.add
                 apply Differentiable.mul
                 exact differentiable_const (1 - ρ s)
-                have := (hθ₀_diff.differentiable (OrderTop.le_top (1:ℕ∞)))
+                have := imm_γ₀.contDiff_lift
+                have t2 : p.θ₀ = (CircleImmersion.lift imm_γ₀) := by
+                  unfold WG_pair.θ₀
+                  simp only
+                rw [← t2] at this
+                have := (this.differentiable (OrderTop.le_top (1:ℕ∞)))
                 exact this
                 apply Differentiable.mul
                 exact differentiable_const (ρ s)
-                have this2 := (hθ₁_diff.differentiable (OrderTop.le_top (1:ℕ∞)))
+                have := imm_γ₁.contDiff_lift
+                have t2 : p.θ₁ = (CircleImmersion.lift imm_γ₁) := by
+                  unfold WG_pair.θ₁
+                  simp only
+                rw [← t2] at this
+                have this2 := (this.differentiable (OrderTop.le_top (1:ℕ∞)))
                 exact this2
-              have := dR s t
+              --have := dR s t
 
-              have : HasDerivAt ((fun t' ↦ R (θ s t'))) (R (θ s t + π / 2) * ↑(deriv (θ s) t)) t := by
+              have : HasDerivAt ((fun t' ↦ R (p.θ s t'))) (R (p.θ s t + π / 2) * ↑(deriv (p.θ s) t)) t := by
                 sorry -- HOW TO CONVERT DERIV TO HASDERIVAT????
 
               exact HasDerivAt.differentiableAt this
@@ -934,7 +944,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
               simp
               simp
 
-          _ = (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (θ s) t) * ruffle ((↑N₀ + 1) * t)) := by --left term is an rfl and a chain rule, right term using dR (up to a hidden rfl and rewriting the statement of dR)
+          _ = (R ((1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ((R ((1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t + π / 2) * deriv (p.θ s) t) * ruffle ((↑N₀ + 1) * t)) := by --left term is an rfl and a chain rule, right term using dR (up to a hidden rfl and rewriting the statement of dR)
 
             simp
 
@@ -952,17 +962,17 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
 
-            have fact2 : deriv (fun t' ↦ R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t')) t = R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * ↑(deriv (fun t ↦ (1 - ρ s) * θ₀ t + ρ s * θ₁ t) t) := by
-              have := dR s t
+            have fact2 : deriv (fun t' ↦ R ((1 - ρ s) * p.θ₀ t' + ρ s * p.θ₁ t')) t = R ((1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t + π / 2) * ↑(deriv (fun t ↦ (1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t) t) := by
+              have : deriv (fun (t' : ℝ) ↦ R (p.θ s t')) t = R ((p.θ s t) + π / 2) * deriv (p.θ s) t := by sorry
               exact this
 
 
 
             rw[fact1,fact2]
 
-            exact
-              Tactic.RingNF.mul_assoc_rev (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t))
-                (deriv ruffle ((↑N₀ + 1) * t)) (↑N₀ + 1)
+            sorry
+              --Tactic.RingNF.mul_assoc_rev (R ((1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t))
+                --(deriv ruffle ((↑N₀ + 1) * t)) (↑N₀ + 1)
 
 
 
@@ -977,13 +987,14 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
           --the norms of each of the above terms are (supposedly) bounded by K₁ and K₂ respectively. Might need to demonstrate that these terms are identical to the things in those statements
-        have bro_on_god₁ : deriv (γ s) t = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * θ₀ t + ρ s * θ₁ t + π / 2) * deriv (p.θ s) t) * ruffle ((↑N₀ + 1) * t)) := by
+        have bro_on_god₁ : deriv (γ s) t = (((1 - ↑(ρ s)) * deriv γ₀ t) + (↑(ρ s) * deriv γ₁ t)) + ↑(h s) * (R ((1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t) * (deriv ruffle ((↑N₀ + 1) * t)) * (↑N₀ + 1)) + ↑(h s) * ((R ((1 - ρ s) * p.θ₀ t + ρ s * p.θ₁ t + π / 2) * deriv (p.θ s) t) * ruffle ((↑N₀ + 1) * t)) := by
           calc
           deriv (γ s) t = deriv (fun t' ↦ p.ϝ s t' + (h s) • (R (p.θ s t') * ruffle ((N₀ + 1) * t'))) t := rfl
-          _ = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * θ₀ t' + ρ s * θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by --rw deriv_add _ _ twice i think or rw with linearity to cover several lines if thats a thing we can do
+          _ = deriv (fun t' ↦ (1 - ↑(ρ s)) * γ₀ t') t + deriv (fun t' ↦ ↑(ρ s) * γ₁ t') t + deriv (fun t' ↦ ↑(h s) * (R ((1 - ρ s) * p.θ₀ t' + ρ s * p.θ₁ t') * ruffle ((↑N₀ + 1) * t'))) t := by --rw deriv_add _ _ twice i think or rw with linearity to cover several lines if thats a thing we can do
               rw [deriv_add]
 
-              simp only
+              unfold WG_pair.θ
+
 
               rw [deriv_add]
               simp
