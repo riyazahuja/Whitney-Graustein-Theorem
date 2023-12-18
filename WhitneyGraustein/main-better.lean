@@ -41,8 +41,12 @@ axiom CircleImmersion.contDiff_lift : ContDiff ℝ ⊤ imm_γ.lift
 axiom CircleImmersion.deriv_eq (t : ℝ) : deriv γ t = ‖deriv γ t‖ * Complex.exp (I * imm_γ.lift t)
 
 
-
+-- NEED TURNING NUMBER TO BE AN INTEGER!!!!!
 noncomputable def CircleImmersion.turningNumber := (imm_γ.lift 1 - imm_γ.lift 0) / (2 * π)
+
+
+axiom CircleImmersion.turningNumber_difference : ∀x, imm_γ.lift (x+1) = imm_γ.lift (x) + 2*π*(imm_γ.turningNumber)
+
 
 structure HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ (uncurry γ)
@@ -306,6 +310,7 @@ lemma ρ_mem : ∀ x, ρ x ∈ Icc (0 : ℝ) 1 := sorry
 theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : CircleImmersion γ₀) (imm_γ₁ : CircleImmersion γ₁) :
   (imm_γ₀.turningNumber = imm_γ₁.turningNumber) → ∃ (γ : ℝ → ℝ → ℂ), HtpyCircleImmersion γ ∧ ((∀ t, γ 0 t = γ₀ t) ∧ (∀ t, γ 1 t = γ₁ t)) := by
   intro hyp --we want to show that since there exists some N,H pair such that... then there exists...
+  let tn := CircleImmersion.turningNumber imm_γ₀
 
   rcases (lift_exists imm_γ₀) with ⟨(θ₀ : ℝ → ℝ), hθ₀_lift_is_lift, hθ₀_diff, hθ₀_decomp⟩
   rcases (lift_exists imm_γ₁) with ⟨(θ₁ : ℝ → ℝ), hθ₁_lift_is_lift, hθ₁_diff, hθ₁_decomp⟩
@@ -612,21 +617,37 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
           rw [this]
 
 
-        have period : ((1 - ρ s) * θ₀ (x + 1) + ρ s * θ₁ (x + 1))= ((1 - ρ s) * θ₀ (x) + ρ s * θ₁ (x)) + 2*π := by
-          sorry --USE TURNING NUMBER HYP
+        have period : ((1 - ρ s) * θ₀ (x + 1) + ρ s * θ₁ (x + 1))= ((1 - ρ s) * θ₀ (x) + ρ s * θ₁ (x)) + 2*π*tn := by
+          rw [hθ₀_lift_is_lift]
+          rw [hθ₁_lift_is_lift]
 
+          rw [imm_γ₀.turningNumber_difference x]
+          rw [imm_γ₁.turningNumber_difference x]
+
+          rw[← hyp]
+          have : (1 - ρ s) * (CircleImmersion.lift imm_γ₀ x + 2 * π * CircleImmersion.turningNumber imm_γ₀) + ρ s * (CircleImmersion.lift imm_γ₁ x + 2 * π * CircleImmersion.turningNumber imm_γ₀) = (1 - ρ s) * (CircleImmersion.lift imm_γ₀ x) + (1 - ρ s) * 2 * π * CircleImmersion.turningNumber imm_γ₀ + ρ s * (CircleImmersion.lift imm_γ₁ x) + ρ s * 2 * π * CircleImmersion.turningNumber imm_γ₀ := by
+            ring
+          rw [this]
+          clear this
+          ring
 
         simp
 
         specialize pϝ x
 
-        specialize pθ x
+
+
+        --specialize p_R x
         specialize p_ruffle x
         simp at pϝ
         rw [← pϝ]
         simp
 
-        simp at pθ
+        simp at p_R
+        have := Function.Periodic.int_mul p_R (tn)
+
+
+
         rw [← pθ]
         simp
 
