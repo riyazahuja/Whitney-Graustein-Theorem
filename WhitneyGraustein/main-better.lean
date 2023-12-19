@@ -733,7 +733,9 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         dsimp only [γ]
 
 
-        rw [pϝ p s x]
+        have := pϝ p s x
+        unfold WG_pair.γ
+        rw [this]
         have := p_ruffle (↑N₀+1) x
         simp at this
         rw [this]
