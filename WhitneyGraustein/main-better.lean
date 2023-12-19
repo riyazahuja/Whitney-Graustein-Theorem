@@ -476,12 +476,12 @@ end R
 
 
 
-/-
+
 section ABC
 
 variable (p : WG_pair)
 
-
+namespace WG_pair
 section A
 
 def A := fun s t ↦ deriv (p.ϝ s) t
@@ -546,10 +546,10 @@ end B
 
 section C
 
-def WG_pair.C := fun s t ↦ (2 * π) • (deriv ruffle t * R (p.θ s t)) --NOTICE NEITHER H NOR N₀ IS INCLUDED IN THIS STATEMENT.
-def WG_pair.normC := fun s t ↦ ‖p.C s t‖--Im not quite sure how to address this; the underlying argument is that this is true for any nonzero scaling of the t argued to the deriv, and similarly the extrema of ‖C‖ are also unchanged.
+def C := fun s t ↦ (2 * π) • (deriv ruffle t * R (p.θ s t)) --NOTICE NEITHER H NOR N₀ IS INCLUDED IN THIS STATEMENT.
+def normC := fun s t ↦ ‖p.C s t‖--Im not quite sure how to address this; the underlying argument is that this is true for any nonzero scaling of the t argued to the deriv, and similarly the extrema of ‖C‖ are also unchanged.
 
-lemma WG_pair.contC : Continuous (uncurry p.normC) := by
+lemma contC : Continuous (uncurry p.normC) := by
   have c1 := ((contDiff_top_iff_deriv.1 (ruffle_diff)).2).continuous
 
   have c2 : Continuous (uncurry p.θ) := p.θ_diff.continuous
@@ -572,11 +572,11 @@ lemma WG_pair.contC : Continuous (uncurry p.normC) := by
 
 end C
 
-
+end WG_pair
 
 end ABC
 
--/
+
 
 
 section WGMain
@@ -592,129 +592,18 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let θ₀ := p.θ₀
   let θ₁ := p.θ₁
 
-
-  /-A-/
-
-  let A := fun s t ↦ deriv (p.ϝ s) t
-  let normA := fun s t ↦ ‖A s t‖
-
-  have contA : Continuous (uncurry normA) := (ContDiff.continuous_partial_snd (p.ϝ_diff) (OrderTop.le_top (1:ℕ∞))).norm
-
-  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) contA.continuousOn with
+  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contA.continuousOn with
     ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
-  let K₃ := normA s₃ t₃
+  let K₃ := p.normA s₃ t₃
 
-
-
-  /-B-/
-  let B (s t : ℝ) := (deriv (p.θ s) t) • (R ((p.θ s t) + π / 2) * ruffle t)
-  let normB := fun s t ↦ ‖B s t‖
-
-
-
-  have contB : Continuous (uncurry normB) := by
-    have c1 := (ContDiff.continuous_partial_snd (p.θ_diff) (OrderTop.le_top (1:ℕ∞)))
-    have c2 : Continuous (fun (x:(ℝ×ℝ)) ↦ R ((p.θ x.1 x.2) + π / 2) * ruffle x.2) := by
-      apply Continuous.mul
-      apply Continuous.comp
-      exact Complex.continuous_exp
-      apply Continuous.smul
-      apply Continuous.add
-      exact ContDiff.continuous p.θ_diff
-      exact continuous_const
-      exact continuous_const
-
-      rw [duh]
-      apply Continuous.add
-      apply Continuous.neg
-      apply Continuous.comp'
-      exact continuous_ofReal
-      apply Continuous.comp'
-      exact Real.continuous_sin
-      apply Continuous.comp
-      exact continuous_mul_left (4 * π : ℝ)
-      apply Continuous.comp'
-      exact continuous_snd
-      exact continuous_id'
-
-      apply Continuous.smul
-      apply Continuous.comp
-      exact continuous_mul_left 2
-      apply Continuous.comp'
-      exact Real.continuous_sin
-      apply Continuous.comp
-      exact continuous_mul_left (2 * π : ℝ)
-      apply Continuous.comp'
-      exact continuous_snd
-
-      exact continuous_id'
-
-      exact continuous_const
-
-    exact (Continuous.smul c1 c2).norm
-
-
-  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) contB.continuousOn with
+  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contB.continuousOn with
     ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
-  let K₂ := normB s₂ t₂
+  let K₂ := p.normB s₂ t₂
 
 
-  /-C-/
-  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (p.θ s t)) --NOTICE NEITHER H NOR N₀ IS INCLUDED IN THIS STATEMENT.
-  let normC := fun s t ↦ ‖C s t‖--Im not quite sure how to address this; the underlying argument is that this is true for any nonzero scaling of the t argued to the deriv, and similarly the extrema of ‖C‖ are also unchanged.
-
-  have contC : Continuous (uncurry normC) := by
-    have c1 := ((contDiff_top_iff_deriv.1 (ruffle_diff)).2).continuous
-
-    have c2 : Continuous (uncurry p.θ) := p.θ_diff.continuous
-
-    have c3 : Continuous (fun (x:(ℝ×ℝ)) ↦ (2 * π) • (deriv ruffle x.2 * R (p.θ x.1 x.2))) := by
-      apply Continuous.smul
-      exact continuous_const
-      apply Continuous.mul
-      apply Continuous.comp'
-      exact c1
-      exact continuous_snd
-      apply Continuous.comp
-      exact Complex.continuous_exp
-      apply Continuous.smul
-      exact c2
-      exact continuous_const
-
-    exact c3.norm
-
-
-
-  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) contC.continuousOn with
+  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) p.contC.continuousOn with
     ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
-  let K₁ := normC s₁ t₁
-
-  /-
-  ------------------------------------------------------------------------CHECK IF 2 π SHOULD REALLY BE HERE
-  let C := fun s t ↦ (2 * π) • (deriv ruffle t * R (θ s t)) --NOTICE NEITHER H NOR N₀ IS INCLUDED IN THIS STATEMENT.
-  let normC := fun s t ↦ ‖C s t‖--Im not quite sure how to address this; the underlying argument is that this is true for any nonzero scaling of the t argued to the deriv, and similarly the extrema of ‖C‖ are also unchanged.
-
-  have cont : Continuous (uncurry normC) := by
-    have c1 := ((contDiff_top_iff_deriv.1 (ruffle_diff)).2).continuous
-
-    have c2 : Continuous (uncurry θ) := θ_diff.continuous
-
-    have c3 : Continuous (fun (x:(ℝ×ℝ)) ↦ (2 * π) • (deriv ruffle x.2 * R (θ x.1 x.2))) := by
-      apply Continuous.smul
-      exact continuous_const
-      apply Continuous.mul
-      apply Continuous.comp'
-      exact c1
-      exact continuous_snd
-      apply Continuous.comp
-      exact Complex.continuous_exp
-      apply Continuous.smul
-      exact c2
-      exact continuous_const
-
-    exact c3.norm
--/
-
+  let K₁ := p.normC s₁ t₁
 
   have K₁_pos : K₁ > 0 := by
     by_contra opp
