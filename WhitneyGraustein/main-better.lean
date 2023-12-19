@@ -37,22 +37,11 @@ structure HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ (uncurry γ)
   imm : ∀ s, CircleImmersion (γ s)
 
-/-
-∀K₁, K₂, K₃ : ℝ, with K₁ > 0, and ∀H > 0, we claim that  there exists some N₀ such that N ≥ N₀
-implies that K₁HN - K₂H - K₃ > 0
 
-This is required to construct our gamma function and for the main phase.
--/
 
 lemma root_lemma_maybe {H : ℝ} (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
-  /- Claim that N₀ = max (⌊(K₃ + K₂ * H) / (K₁ * H) + 1⌋) (0)
 
-  Note that:
-  N₀ > (K₃ + K₂ * H) / (K₁ * H)
-  ↔ K₁*HN > K₃ + K₂ * H
-  ↔  K₁*HN - K₂ * H -  K₃ > 0
-  -/
   let N₀ := Nat.floor (max ((K₃ + K₂ * H) / (K₁ * H) + 1) (0) )
   use N₀
   intro N hN
@@ -736,12 +725,7 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
       have periodic : Periodic (γ s) 1 := by
-
-      /-REDO, θ IS NOT PERIODIC!!!!
-
-      -/
-        sorry
-/-         unfold Periodic
+        unfold Periodic
         intro x
         dsimp only [γ]
 
@@ -786,18 +770,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
 
 
-
-        simp at p_R
-        have := Function.Periodic.int_mul p_R (tn)
-
-
-
-        rw [← pθ]
-        simp
-
-        simp at p_ruffle
-        rw [← p_ruffle]
-        simp -/
 
       have dγnon0 : ∀ t, deriv (γ s) t ≠ 0 := by
         intro t
@@ -870,16 +842,6 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
             rw[fact1,fact2]
             congr 1
             ring
-
-
-
-
-
-
-
-
-
-
 
 
 
