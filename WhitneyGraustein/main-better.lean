@@ -20,6 +20,8 @@ structure CircleImmersion (γ : ℝ → ℂ) : Prop where
 
 axiom CircleImmersion.lift {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ) : ℝ → ℝ
 
+section axioms
+
 variable {γ : ℝ → ℂ} (imm_γ : CircleImmersion γ)
 
 axiom CircleImmersion.contDiff_lift : ContDiff ℝ ⊤ imm_γ.lift
@@ -37,7 +39,7 @@ structure HtpyCircleImmersion (γ : ℝ → ℝ → ℂ) : Prop where
   diff : ContDiff ℝ ⊤ (uncurry γ)
   imm : ∀ s, CircleImmersion (γ s)
 
-
+end axioms
 
 lemma root_lemma_maybe {H : ℝ} (K₁ : ℝ) (K₂ : ℝ) (K₃ : ℝ) (K₁_pos : K₁ > 0) (H_pos : H > 0) : ∃ (N₀ : ℕ), ∀ N > N₀, (K₁ * H) * N - (K₂ * H + K₃) > 0 := by
   let K₁H_pos := Real.mul_pos K₁_pos H_pos
@@ -618,6 +620,76 @@ lemma K₁_pos : p.K₁ > 0 := by
 
 end K₁
 
+section K₂
+
+lemma exists_max_B : ∃ x ∈ unit ×ˢ unit, IsMaxOn (uncurry (normB p)) (unit ×ˢ unit) x :=
+  (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contB.continuousOn
+
+@[pp_dot]
+def t₂ := p.exists_max_B.choose.1
+
+@[pp_dot]
+def s₂ := p.exists_max_B.choose.2
+
+def K₂ := p.normB p.s₂ p.t₂
+
+end K₂
+
+section K₃
+
+lemma exists_max_A : ∃ x ∈ unit ×ˢ unit, IsMaxOn (uncurry (normA p)) (unit ×ˢ unit) x :=
+  (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contA.continuousOn
+
+@[pp_dot]
+def t₃ := p.exists_max_A.choose.1
+
+@[pp_dot]
+def s₃ := p.exists_max_A.choose.2
+
+def K₃ := p.normA p.s₃ p.t₃
+
+end K₃
+
+section N₀
+
+def N₀ := (root_lemma_maybe p.K₁ p.K₂ p.K₃ p.K₁_pos H_pos).choose
+
+lemma hN₀ : ∀ N > p.N₀, p.K₁ * H * ↑N - (p.K₂ * H + p.K₃) > 0 := (root_lemma_maybe p.K₁ p.K₂ p.K₃ p.K₁_pos H_pos).choose_spec
+
+end N₀
+
+section γ
+
+def γ : ℝ → ℝ → ℂ := fun s t ↦ p.ϝ s t + (h s) • (R (p.θ s t) * ruffle ((p.N₀ + 1) * t))
+
+lemma γ_diff : ContDiff ℝ ⊤ (uncurry p.γ) := by
+  apply ContDiff.add
+  exact p.ϝ_diff
+  apply ContDiff.smul
+  exact ContDiff.fst' h_diff
+  apply ContDiff.mul
+  apply ContDiff.comp
+  exact Complex.contDiff_exp
+  apply ContDiff.smul
+  exact p.θ_diff
+  exact contDiff_const
+  have : ContDiff ℝ ⊤ (fun (x : ℝ × ℝ) ↦ (p.N₀ + 1) * x.2) := by
+    apply ContDiff.snd'
+    apply ContDiff.mul
+    exact contDiff_const
+    exact contDiff_id
+  have this2 := ruffle_diff
+  have fin := ContDiff.comp this2 this
+  have duh : (ruffle ∘ fun (x : ℝ × ℝ) ↦ (p.N₀ + 1) * x.2) = (fun (x : ℝ × ℝ) ↦ ruffle ((p.N₀ + 1) * x.2)) := by
+    exact rfl
+  rw [duh] at fin
+  exact fin
+
+-- This lemma was very inefficiently duplicating the proof of the previous one.
+lemma γ_diff' (s : ℝ) : ContDiff ℝ ⊤ (p.γ s) :=
+  p.γ_diff.comp (contDiff_prod_mk_right s)
+
+end γ
 
 end WG_pair
 
@@ -639,91 +711,22 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
   let θ₀ := p.θ₀
   let θ₁ := p.θ₁
 
-  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contA.continuousOn with
-    ⟨⟨s₃, t₃⟩, ⟨s₃in : s₃ ∈ unit, t₃in : t₃ ∈ unit⟩, hst₃⟩
-  let K₃ := p.normA s₃ t₃
-
-  rcases (unit_compact.prod unit_compact).exists_isMaxOn (unit_nonempty.prod unit_nonempty) p.contB.continuousOn with
-    ⟨⟨s₂, t₂⟩, ⟨s₂in : s₂ ∈ unit, t₂in : t₂ ∈ unit⟩, hst₂⟩
-  let K₂ := p.normB s₂ t₂
-
-
-  rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) p.contC.continuousOn with
-    ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
   let K₁ := p.K₁
-
   have K₁_pos : K₁ > 0 := p.K₁_pos
-
-  rcases (root_lemma_maybe K₁ K₂ K₃ K₁_pos H_pos) with ⟨N₀, hN₀⟩
+  let K₂ := p.K₂
+  let K₃ := p.K₃
+  let N₀ := p.N₀
+  have hN₀ :=p.hN₀
+  let γ := p.γ
 
   --Prove K₁ is positive and do the same for H (or set H = 1), get N₀, then N
 
-  let γ : ℝ → ℝ → ℂ := fun s t ↦ p.ϝ s t + (h s) • (R (p.θ s t) * ruffle ((N₀ + 1) * t))
+
   use γ
   constructor
   --these statements will likely need to be proved out of order, probably starting with the statement of derive_ne
-  · have dif : ContDiff ℝ ⊤ (uncurry γ) := by
-      have sufficient : ContDiff ℝ ⊤ (fun (x : ℝ × ℝ) ↦ p.ϝ x.1 x.2 + (h x.1) • (R (p.θ x.1 x.2) * ruffle ((N₀ + 1) * x.2))) := by
-        apply ContDiff.add
-        exact p.ϝ_diff
-        apply ContDiff.smul
-        exact ContDiff.fst' h_diff
-        apply ContDiff.mul
-        apply ContDiff.comp
-        exact Complex.contDiff_exp
-        apply ContDiff.smul
-        exact p.θ_diff
-        exact contDiff_const
-        have : ContDiff ℝ ⊤ (fun (x : ℝ × ℝ) ↦ (↑N₀ + 1) * x.2) := by
-          apply ContDiff.snd'
-          apply ContDiff.mul
-          exact contDiff_const
-          exact contDiff_id
-        have this2 := ruffle_diff
-        have fin := ContDiff.comp this2 this
-        have duh : (ruffle ∘ fun (x : ℝ × ℝ) ↦ (↑N₀ + 1) * x.2) = (fun (x : ℝ × ℝ) ↦ ruffle ((↑N₀ + 1) * x.2)) := by
-          exact rfl
-        rw [duh] at fin
-        exact fin
-      exact sufficient
-
-    have im : ∀ s, CircleImmersion (γ s) := by
+  · have im : ∀ s, CircleImmersion (γ s) := by
       intro s
-      have cdiff : ContDiff ℝ ⊤ (γ s) := by
-        simp only
-        apply ContDiff.add
-        apply ContDiff.add
-        apply ContDiff.smul
-        exact contDiff_const
-        exact imm_γ₀.diff
-        apply ContDiff.smul
-        exact contDiff_const
-        exact imm_γ₁.diff
-        apply ContDiff.smul
-        exact contDiff_const
-        apply ContDiff.mul
-        apply ContDiff.comp
-        exact Complex.contDiff_exp
-        apply ContDiff.smul
-        apply ContDiff.add
-        apply ContDiff.mul
-        exact contDiff_const
-        exact p.imm_γ₀.contDiff_lift
-        apply ContDiff.mul
-        exact contDiff_const
-        exact p.imm_γ₁.contDiff_lift
-        exact contDiff_const
-
-        have : ContDiff ℝ ⊤ (fun (x : ℝ) ↦ (↑N₀ + 1) * x) := ContDiff.mul contDiff_const contDiff_id
-
-        have fin := ContDiff.comp ruffle_diff this
-
-        have duh : (ruffle ∘ fun (x : ℝ) ↦ (↑N₀ + 1) * x) = (fun (x : ℝ) ↦ ruffle ((↑N₀ + 1) * x)) := rfl
-
-        rw [duh] at fin
-        exact fin
-
-
       have periodic : Periodic (γ s) 1 := by
         unfold Periodic
         intro x
@@ -940,15 +943,15 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
         --then below apply the rewrites, triangle inequality, bing bang boom you gottem
         --also you might need a little commutativity/associativity inside the norm to translate between facts here
 
-      exact { diff := cdiff, per := periodic, deriv_ne := dγnon0 }
+      exact { diff := p.γ_diff' s, per := periodic, deriv_ne := dγnon0 }
 
-    exact { diff := dif, imm := im }
+    exact { diff := p.γ_diff, imm := im }
 
   · constructor
     · intro t
-      simp [γ]
+      simp [WG_pair.γ]
     · intro t
-      simp [γ]
+      simp [WG_pair.γ]
 
 
 end WGMain
