@@ -572,6 +572,64 @@ lemma contC : Continuous (uncurry p.normC) := by
 
 end C
 
+section K₁
+
+lemma exists_min_C : ∃ x ∈ unit ×ˢ unit, IsMinOn (uncurry (normC p)) (unit ×ˢ unit) x :=
+  (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) p.contC.continuousOn
+
+@[pp_dot]
+def t₁ := p.exists_min_C.choose.1
+
+@[pp_dot]
+def s₁ := p.exists_min_C.choose.2
+
+@[pp_dot]
+def K₁ := ‖p.C p.s₁ p.t₁‖
+
+lemma K₁_pos : p.K₁ > 0 := by
+  by_contra opp
+  push_neg at opp
+  let t₁ := p.t₁
+  let s₁ := p.s₁
+  let θ₀ := p.θ₀
+  let θ₁ := p.θ₁
+
+  simp only [WG_pair.K₁, WG_pair.C] at opp
+  have := norm_nonneg ((2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)))
+  have opp': ‖(2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))‖ = 0 := by
+    exact opp.antisymm this
+  clear opp this
+
+  rw [norm_smul (2*π) (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))] at opp'
+  apply mul_eq_zero.1 at opp'
+  rcases opp' with A|opp
+  simp at A
+  have : π ≠ 0 := by
+    exact pi_ne_zero
+  exact this A
+
+  rw [norm_mul (deriv ruffle t₁) (R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))] at opp
+  apply mul_eq_zero.1 at opp
+  rcases opp with B|C
+
+  have := ruffle_deriv_neq_zero_on_unit p.exists_min_C.choose_spec.1.1
+  have : ‖deriv ruffle t₁‖ ≠ 0 := by
+    exact norm_ne_zero_iff.mpr this
+  exact this B
+
+  unfold R at C
+  have : ∀ t:ℝ, t*I = t• I:= by
+    intro t
+    simp
+  specialize this ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)
+  have final := Complex.norm_exp_ofReal_mul_I ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)
+  rw [this] at final
+  rw [final] at C
+  linarith
+
+end K₁
+
+
 end WG_pair
 
 end ABC
@@ -603,44 +661,9 @@ theorem whitney_graustein {γ₀ γ₁ : ℝ → ℂ} {t : ℝ} (imm_γ₀ : Cir
 
   rcases (unit_compact.prod unit_compact).exists_isMinOn (unit_nonempty.prod unit_nonempty) p.contC.continuousOn with
     ⟨⟨s₁, t₁⟩, ⟨s₁in : s₁ ∈ unit, t₁in : t₁ ∈ unit⟩, hst₁⟩
-  let K₁ := p.normC s₁ t₁
+  let K₁ := p.K₁
 
-  have K₁_pos : K₁ > 0 := by
-    by_contra opp
-    push_neg at opp
-    simp only at opp
-    have := norm_nonneg ((2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁)))
-    have opp': ‖(2 * π) • (deriv ruffle t₁ * R ((1 - ρ s₁) * θ₀ t₁ + ρ s₁ * θ₁ t₁))‖ = 0 := by
-      exact opp.antisymm this
-    clear opp this
-
-    rw [norm_smul (2*π) (deriv ruffle t₁ * R ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁))] at opp'
-    apply mul_eq_zero.1 at opp'
-    rcases opp' with A|opp
-    simp at A
-    have : π ≠ 0 := by
-      exact pi_ne_zero
-    exact this A
-
-    rw [norm_mul (deriv ruffle t₁) (R ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁))] at opp
-    apply mul_eq_zero.1 at opp
-    rcases opp with B|C
-
-    have := ruffle_deriv_neq_zero_on_unit t₁in
-    have : ‖deriv ruffle t₁‖ ≠ 0 := by
-      exact norm_ne_zero_iff.mpr this
-    exact this B
-
-    unfold R at C
-    have : ∀ t:ℝ, t*I = t• I:= by
-      intro t
-      simp
-    specialize this ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁)
-    have final := Complex.norm_exp_ofReal_mul_I ((1 - ρ s₁) * p.θ₀ t₁ + ρ s₁ * p.θ₁ t₁)
-    rw [this] at final
-    rw [final] at C
-    linarith
-
+  have K₁_pos : K₁ > 0 := p.K₁_pos
 
   rcases (root_lemma_maybe K₁ K₂ K₃ K₁_pos H_pos) with ⟨N₀, hN₀⟩
 
