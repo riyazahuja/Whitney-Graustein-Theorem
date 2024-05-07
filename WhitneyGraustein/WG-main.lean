@@ -152,7 +152,7 @@ end coer_properties
 
 
 section H
-
+/- Abstract Construction of Homotopy (should probably convert lemma to axiom) -/
 def H : ℝ := 1
 
 lemma H_pos : 0 < H := Real.zero_lt_one
